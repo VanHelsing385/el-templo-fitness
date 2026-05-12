@@ -27,7 +27,7 @@ async function getMembresia(req, res) {
 async function getPagos(req, res) {
     try {
         const [rows] = await db.query(
-            'SELECT monto, fecha, descripcion FROM pagos WHERE usuario_id = ? ORDER BY fecha DESC',
+            'SELECT monto, fecha_pago, descripcion FROM pagos WHERE usuario_id = ? ORDER BY fecha_pago DESC',
             [req.usuario.id]
         );
         res.json(rows);

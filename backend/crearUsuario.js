@@ -1,17 +1,17 @@
 const bcrypt = require('bcryptjs');
 const db = require('./DB');
 
-async function crearUsuario() {
-    const hash = await bcrypt.hash('password123', 10);
+async function crearRecep() {
+    const hash = await bcrypt.hash('recep123', 10);
     
     await db.query(
-        `INSERT INTO usuarios (nombre, cc, celular, correo, contrasena, rol)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        ['Recepcionista Prueba', '999999999', '3009999999', 'recep2@templo.com', hash, 'recepcionista']
+        `INSERT INTO usuarios (nombre, cc, celular, correo, contrasena, rol_id)
+         VALUES (?, ?, ?, ?, ?, 2)`,
+        ['Recepcionista Prueba', '999999999', '3009999999', 'recep@templo.com', hash]
     );
 
-    console.log('Usuario creado con hash:', hash);
+    console.log('Recepcionista creado');
     process.exit();
 }
 
-crearUsuario();
+crearRecep();

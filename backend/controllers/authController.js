@@ -8,7 +8,10 @@ async function login(req, res) {
 
     try {
         const [rows] = await db.query(
-            'SELECT * FROM usuarios WHERE correo = ?', 
+            `SELECT u.*, r.nombre AS rol 
+             FROM usuarios u
+             JOIN roles r ON u.rol_id = r.id
+             WHERE u.correo = ? AND u.estado = 'activo'`,
             [correo]
         );
 
