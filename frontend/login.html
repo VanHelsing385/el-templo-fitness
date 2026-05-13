@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Templo Fitness — Acceso</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rojo: #D62828;
+    --rojo-dark: #A01E1E;
+    --negro: #0A0A0A;
+    --negro-card: #141414;
+    --negro-input: #1C1C1C;
+    --gris: #2A2A2A;
+    --gris-borde: #333;
+    --blanco: #F5F5F5;
+    --blanco-dim: #9A9A9A;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--negro);
+    color: var(--blanco);
+    min-height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ---- LEFT PANEL ---- */
+  .left-panel {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 60px;
+    background: linear-gradient(160deg, #1a0000 0%, #0A0A0A 60%);
+    overflow: hidden;
+  }
+
+  .left-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.015) 61px),
+      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.015) 60px, rgba(255,255,255,0.015) 61px);
+  }
+
+  .left-panel::after {
+    content: 'EL TEMPLO';
+    position: absolute;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28vw;
+    color: rgba(214,40,40,0.04);
+    top: 50%;
+    left: -5%;
+    transform: translateY(-50%);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .brand {
+    position: absolute;
+    top: 48px;
+    left: 60px;
+    z-index: 2;
+  }
+
+  .brand-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--blanco);
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+
+  .brand-logo span { color: var(--rojo); }
+
+  .brand-tagline {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--blanco-dim);
+    margin-top: 4px;
+  }
+
+  .left-hero {
+    position: relative;
+    z-index: 2;
+  }
+
+  .left-hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    line-height: 0.95;
+    color: var(--blanco);
+    margin-bottom: 20px;
+  }
+
+  .left-hero h1 em {
+    font-style: normal;
+    color: var(--rojo);
+    display: block;
+  }
+
+  .left-hero p {
+    font-size: 0.95rem;
+    color: var(--blanco-dim);
+    font-weight: 300;
+    max-width: 320px;
+    line-height: 1.6;
+  }
+
+  .red-line {
+    width: 60px;
+    height: 3px;
+    background: var(--rojo);
+    margin-bottom: 20px;
+  }
+
+  /* ---- RIGHT PANEL ---- */
+  .right-panel {
+    width: 480px;
+    flex-shrink: 0;
+    background: var(--negro-card);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 52px;
+    border-left: 1px solid var(--gris-borde);
+    position: relative;
+  }
+
+  .right-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--rojo);
+  }
+
+  .login-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--rojo);
+    margin-bottom: 12px;
+  }
+
+  .login-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--blanco);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .login-sub {
+    font-size: 0.85rem;
+    color: var(--blanco-dim);
+    font-weight: 300;
+    margin-bottom: 44px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--blanco-dim);
+    margin-bottom: 10px;
+  }
+
+  .form-group input {
+    width: 100%;
+    background: var(--negro-input);
+    border: 1px solid var(--gris-borde);
+    color: var(--blanco);
+    padding: 14px 18px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 400;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .form-group input::placeholder { color: #444; }
+
+  .form-group input:focus {
+    border-color: var(--rojo);
+    background: #1f1010;
+  }
+
+  .btn-login {
+    width: 100%;
+    background: var(--rojo);
+    color: var(--blanco);
+    border: none;
+    padding: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 4px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-login:hover { background: var(--rojo-dark); }
+  .btn-login:active { transform: scale(0.99); }
+
+  .btn-login::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 60%);
+  }
+
+  .error-msg {
+    display: none;
+    background: rgba(214,40,40,0.12);
+    border: 1px solid var(--rojo);
+    color: #ff8080;
+    font-size: 0.82rem;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-weight: 500;
+  }
+
+  .error-msg.show { display: block; }
+
+  .login-footer {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--gris-borde);
+  }
+
+  .login-footer p {
+    font-size: 0.75rem;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  .login-footer span {
+    color: var(--rojo);
+    font-weight: 600;
+  }
+
+  /* Animaciones de entrada */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .left-hero { animation: slideUp 0.8s ease both; }
+  .right-panel { animation: fadeIn 0.6s ease both; }
+  .form-group:nth-child(1) { animation: slideUp 0.5s 0.2s ease both; }
+  .form-group:nth-child(2) { animation: slideUp 0.5s 0.3s ease both; }
+  .btn-login { animation: slideUp 0.5s 0.4s ease both; }
+</style>
+</head>
+<body>
+
+<div class="left-panel">
+  <div class="brand">
+    <div class="brand-logo">El <span>Templo</span> Fitness</div>
+    <div class="brand-tagline">Forjando campeones desde 2024</div>
+  </div>
+  <div class="left-hero">
+    <div class="red-line"></div>
+    <h1>Tu cuerpo.<br><em>Tu templo.</em></h1>
+    <p>Accede a tu cuenta para consultar tu membresía, historial de pagos y estado de tu plan.</p>
+  </div>
+</div>
+
+<div class="right-panel">
+  <div class="login-label">Portal de acceso</div>
+  <div class="login-title">Iniciar Sesión</div>
+  <div class="login-sub">Ingresa con tu correo registrado</div>
+
+  <div class="form-group">
+    <label>Correo electrónico</label>
+    <input type="email" id="correo" placeholder="tucorreo@email.com" autocomplete="off">
+  </div>
+
+  <div class="form-group">
+    <label>Contraseña</label>
+    <input type="password" id="contrasena" placeholder="••••••••">
+  </div>
+
+  <button class="btn-login" onclick="handleLogin()">Ingresar</button>
+
+  <div class="error-msg" id="errorMsg">
+    Correo o contraseña incorrectos. Verifica tus datos.
+  </div>
+
+  <div class="login-footer">
+    <p>¿Problemas para acceder? Dirígete a <span>recepción</span> para restablecer tu contraseña.</p>
+  </div>
+</div>
+
+<script>
+  async function handleLogin() {
+    const correo = document.getElementById('correo').value.trim();
+    const pass = document.getElementById('contrasena').value;
+    const err = document.getElementById('errorMsg');
+    const btn = document.querySelector('.btn-login');
+
+    if (!correo || !pass) {
+      err.textContent = 'Por favor completa todos los campos.';
+      err.classList.add('show');
+      return;
+    }
+
+    err.classList.remove('show');
+    btn.textContent = 'Ingresando...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch('http://localhost:3000/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo, contrasena: pass })
+      });
+
+      const data = await response.json();
+
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('rol', data.rol);
+
+        if (data.rol === 'cliente') {
+          window.location.href = 'cliente.html';
+        } else if (data.rol === 'recepcionista') {
+          window.location.href = 'recepcionista.html';
+        }
+      } else {
+        err.textContent = data.error || 'Correo o contraseña incorrectos.';
+        err.classList.add('show');
+        btn.textContent = 'Ingresar';
+        btn.disabled = false;
+      }
+
+    } catch (error) {
+      err.textContent = 'No se pudo conectar con el servidor.';
+      err.classList.add('show');
+      btn.textContent = 'Ingresar';
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+</script>
+</body>
+</html>

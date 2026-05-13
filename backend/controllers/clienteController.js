@@ -3,7 +3,7 @@ const db = require('../DB');
 async function getPerfil(req, res) {
     try {
         const [rows] = await db.query(
-            'SELECT id, nombre, cc, celular, correo FROM usuarios WHERE id = ?',
+            'SELECT id, nombre, cc, celular, correo, fecha_registro FROM usuarios WHERE id = ?',
             [req.usuario.id]
         );
         res.json(rows[0]);
@@ -27,7 +27,7 @@ async function getMembresia(req, res) {
 async function getPagos(req, res) {
     try {
         const [rows] = await db.query(
-            'SELECT monto, fecha_pago, descripcion FROM pagos WHERE usuario_id = ? ORDER BY fecha_pago DESC',
+            'SELECT monto, fecha_pago, descripcion, plan FROM pagos WHERE usuario_id = ? ORDER BY fecha_pago DESC',
             [req.usuario.id]
         );
         res.json(rows);

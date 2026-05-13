@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Templo Fitness — Mi Cuenta</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rojo: #D62828;
+    --rojo-dark: #A01E1E;
+    --rojo-glow: rgba(214,40,40,0.15);
+    --negro: #0A0A0A;
+    --negro-card: #141414;
+    --negro-input: #1C1C1C;
+    --gris: #2A2A2A;
+    --gris-borde: #2E2E2E;
+    --blanco: #F5F5F5;
+    --blanco-dim: #AAAAAA;
+    --verde: #22C55E;
+    --amarillo: #EAB308;
+    --sidebar-w: 260px;
+  }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--negro);
+    color: var(--blanco);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ======== SIDEBAR ======== */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--negro-card);
+    border-right: 1px solid var(--gris-borde);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    padding: 32px 28px 24px;
+    border-bottom: 1px solid var(--gris-borde);
+  }
+
+  .brand-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    color: var(--blanco);
+  }
+  .brand-logo span { color: var(--rojo); }
+
+  .brand-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blanco-dim);
+    margin-top: 3px;
+  }
+
+  .sidebar-user {
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--gris-borde);
+  }
+
+  .user-avatar {
+    width: 44px;
+    height: 44px;
+    background: var(--rojo);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    color: var(--blanco);
+    margin-bottom: 10px;
+  }
+
+  .user-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--blanco);
+  }
+
+  .user-plan {
+    font-size: 0.75rem;
+    color: var(--blanco-dim);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+  }
+
+  .nav-section {
+    padding: 0 20px 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #9e9e9e;
+    margin-top: 16px;
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 28px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--blanco-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+  }
+
+  .nav-item:hover {
+    color: var(--blanco);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .nav-item.active {
+    color: var(--blanco);
+    background: var(--rojo-glow);
+    border-left-color: var(--rojo);
+  }
+
+  .nav-icon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .sidebar-bottom {
+    padding: 20px 28px;
+    border-top: 1px solid var(--gris-borde);
+  }
+
+  .btn-logout {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--blanco-dim);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 500;
+    padding: 0;
+    transition: color 0.15s;
+  }
+  .btn-logout:hover { color: var(--rojo); }
+
+  /* ======== MAIN ======== */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: var(--negro-card);
+    border-bottom: 1px solid var(--gris-borde);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .page-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: var(--blanco);
+  }
+
+  .topbar-right {
+    font-size: 0.78rem;
+    color: var(--blanco-dim);
+  }
+
+  .content {
+    padding: 40px;
+    flex: 1;
+  }
+
+  /* ======== CARDS ======== */
+  .cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--negro-card);
+    border: 1px solid var(--gris-borde);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: #444; }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .stat-card.activa::before { background: var(--verde); }
+  .stat-card.vencida::before { background: var(--rojo); }
+  .stat-card.suspendida::before { background: var(--amarillo); }
+  .stat-card.neutral::before { background: var(--gris-borde); }
+
+  .stat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blanco-dim);
+    margin-bottom: 14px;
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.4rem;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .stat-value.verde { color: var(--verde); }
+  .stat-value.rojo { color: var(--rojo); }
+  .stat-value.amarillo { color: var(--amarillo); }
+  .stat-value.blanco { color: var(--blanco); }
+
+  .stat-sub {
+    font-size: 0.75rem;
+    color: var(--blanco-dim);
+    font-weight: 300;
+    margin-top: 6px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    font-weight: 600;
+  }
+
+  .badge.activa { background: rgba(34,197,94,0.15); color: var(--verde); }
+  .badge.vencida { background: rgba(214,40,40,0.15); color: #ff8080; }
+  .badge.suspendida { background: rgba(234,179,8,0.15); color: var(--amarillo); }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .activa .dot { background: var(--verde); }
+  .vencida .dot { background: #ff8080; }
+  .suspendida .dot { background: var(--amarillo); }
+
+  /* ======== SECTION BLOCKS ======== */
+  .section-block {
+    background: var(--negro-card);
+    border: 1px solid var(--gris-borde);
+    margin-bottom: 24px;
+  }
+
+  .section-header {
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--gris-borde);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    color: var(--blanco);
+  }
+
+  .section-body { padding: 24px 28px; }
+
+  /* ======== TABLA PAGOS ======== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blanco-dim);
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--gris-borde);
+  }
+
+  td {
+    padding: 14px 16px;
+    font-size: 0.87rem;
+    font-weight: 400;
+    border-bottom: 1px solid #1E1E1E;
+    color: var(--blanco);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .pago-amount {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--verde);
+  }
+
+  /* ======== PLAN SWITCH ======== */
+  .planes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .plan-card {
+    border: 1px solid var(--gris-borde);
+    padding: 24px;
+    position: relative;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+
+  .plan-card.current {
+    border-color: var(--rojo);
+    background: rgba(214,40,40,0.05);
+  }
+
+  .plan-card.current::before {
+    content: 'PLAN ACTUAL';
+    position: absolute;
+    top: -1px; right: 20px;
+    background: var(--rojo);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+    padding: 3px 10px;
+    color: var(--blanco);
+  }
+
+  .plan-nombre {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .plan-precio {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--rojo);
+    margin-bottom: 12px;
+  }
+
+  .plan-precio span {
+    font-size: 0.8rem;
+    color: var(--blanco-dim);
+    font-weight: 400;
+  }
+
+  .plan-feature {
+    font-size: 0.8rem;
+    color: var(--blanco-dim);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .plan-feature::before {
+    content: '—';
+    color: var(--rojo);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .btn-cambiar {
+    margin-top: 20px;
+    width: 100%;
+    padding: 11px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    border: 1px solid var(--gris-borde);
+    color: var(--blanco-dim);
+  }
+
+  .btn-cambiar:hover {
+    border-color: var(--rojo);
+    color: var(--rojo);
+  }
+
+  .btn-cambiar.current {
+    background: var(--rojo);
+    border-color: var(--rojo);
+    color: var(--blanco);
+    cursor: default;
+  }
+
+  /* ======== ZONA PELIGRO ======== */
+  .danger-zone {
+    border: 1px solid rgba(214,40,40,0.3);
+    padding: 28px;
+    background: rgba(214,40,40,0.03);
+  }
+
+  .danger-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    color: var(--rojo);
+    margin-bottom: 8px;
+  }
+
+  .danger-desc {
+    font-size: 0.82rem;
+    color: var(--blanco-dim);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 500px;
+  }
+
+  .btn-cancelar {
+    padding: 12px 28px;
+    background: transparent;
+    border: 1px solid var(--rojo);
+    color: var(--rojo);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-cancelar:hover {
+    background: var(--rojo);
+    color: var(--blanco);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--negro-card);
+    border: 1px solid var(--gris-borde);
+    border-top: 3px solid var(--rojo);
+    padding: 40px;
+    width: 420px;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .modal p {
+    font-size: 0.85rem;
+    color: var(--blanco-dim);
+    line-height: 1.6;
+    margin-bottom: 28px;
+    font-weight: 300;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn-modal-cancel {
+    flex: 1;
+    padding: 12px;
+    background: var(--gris);
+    border: none;
+    color: var(--blanco);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+
+  .btn-modal-confirm {
+    flex: 1;
+    padding: 12px;
+    background: var(--rojo);
+    border: none;
+    color: var(--blanco);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+
+  /* ======== TABS ======== */
+  .tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--gris-borde);
+    padding: 0 28px;
+  }
+
+  .tab-btn {
+    padding: 14px 20px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--blanco-dim);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    color: var(--blanco);
+    border-bottom-color: var(--rojo);
+  }
+
+  .tab-content { display: none; padding: 24px 28px; }
+  .tab-content.active { display: block; }
+
+  /* view sections */
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">El <span>Templo</span></div>
+    <div class="brand-sub">Portal del cliente</div>
+  </div>
+
+  <div class="sidebar-user">
+    <div class="user-avatar" id="avatarInitial">JA</div>
+    <div class="user-name" id="sidebarName">Juan Armella</div>
+    <div class="user-plan" id="sidebarPlan">Plan Simple · CC 1001234567</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Mi cuenta</div>
+    <a class="nav-item active" onclick="showView('inicio')">
+      <span class="nav-icon">⬛</span> Estado de cuenta
+    </a>
+    <a class="nav-item" onclick="showView('pagos')">
+      <span class="nav-icon">📋</span> Historial de pagos
+    </a>
+    <a class="nav-item" onclick="showView('plan')">
+      <span class="nav-icon">🏷️</span> Mi plan
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <button class="btn-logout" onclick="window.location.href='login.html'">
+      <span>⟵</span> Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Estado de Cuenta</div>
+    <div class="topbar-right" id="topbarDate">Cargando fecha...</div>
+  </div>
+
+  <div class="content">
+
+    <!-- VIEW: INICIO -->
+    <div class="view active" id="view-inicio">
+      <div class="cards-row">
+        <div class="stat-card activa">
+          <div class="stat-label">Estado de membresía</div>
+          <div style="margin-bottom: 8px;">
+            <span class="badge activa"><span class="dot"></span> Activa</span>
+          </div>
+          <div class="stat-sub">Tu membresía está al día</div>
+        </div>
+
+        <div class="stat-card neutral">
+          <div class="stat-label">Próximo vencimiento</div>
+          <div class="stat-value blanco" id="fechaVencimiento">31 Mayo</div>
+          <div class="stat-sub" id="diasRestantes">Quedan 19 días</div>
+        </div>
+
+        <div class="stat-card neutral">
+          <div class="stat-label">Último pago registrado</div>
+          <div class="stat-value blanco">$70.000</div>
+          <div class="stat-sub">2 de mayo de 2026</div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-header">
+          <div class="section-header-title">Resumen de Cuenta</div>
+        </div>
+        <div class="section-body">
+          <table>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem; width:200px;">Nombre completo</td>
+              <td id="infoNombre">Juan Manuel Armella</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Cédula</td>
+              <td id="infoCc">1001234567</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Correo</td>
+              <td id="infoCorreo">juan@email.com</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Plan activo</td>
+              <td id="infoPlan">Plan Simple — 1 sede · $70.000/mes</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Miembro desde</td>
+              <td id="infoDesde">—</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: PAGOS -->
+    <div class="view" id="view-pagos">
+      <div class="section-block">
+        <div class="section-header">
+          <div class="section-header-title">Historial de Pagos</div>
+          <span style="font-size:0.75rem; color:var(--blanco-dim);">Últimos registros</span>
+        </div>
+        <div style="padding: 0 28px 28px;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Plan</th>
+                <th>Monto</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.78rem;">006</td>
+                <td>02 May 2026</td>
+                <td>Mensualidad mayo</td>
+                <td>Simple</td>
+                <td class="pago-amount">$70.000</td>
+                <td><span class="badge activa"><span class="dot"></span>Pagado</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.78rem;">005</td>
+                <td>01 Abr 2026</td>
+                <td>Mensualidad abril</td>
+                <td>Simple</td>
+                <td class="pago-amount">$70.000</td>
+                <td><span class="badge activa"><span class="dot"></span>Pagado</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.78rem;">004</td>
+                <td>03 Mar 2026</td>
+                <td>Mensualidad marzo</td>
+                <td>Simple</td>
+                <td class="pago-amount">$70.000</td>
+                <td><span class="badge activa"><span class="dot"></span>Pagado</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.78rem;">003</td>
+                <td>01 Feb 2026</td>
+                <td>Mensualidad febrero</td>
+                <td>Simple</td>
+                <td class="pago-amount">$70.000</td>
+                <td><span class="badge activa"><span class="dot"></span>Pagado</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.78rem;">002</td>
+                <td>15 Ene 2026</td>
+                <td>Mensualidad enero</td>
+                <td>Simple</td>
+                <td class="pago-amount">$70.000</td>
+                <td><span class="badge activa"><span class="dot"></span>Pagado</span></td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.78rem;">001</td>
+                <td>01 Ene 2026</td>
+                <td>Inscripción inicial</td>
+                <td>Simple</td>
+                <td class="pago-amount">$70.000</td>
+                <td><span class="badge activa"><span class="dot"></span>Pagado</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: PLAN -->
+    <div class="view" id="view-plan">
+      <div class="section-block" style="margin-bottom:24px;">
+        <div class="section-header">
+          <div class="section-header-title">Cambiar Plan</div>
+        </div>
+        <div class="section-body">
+          <p style="font-size:0.82rem; color:var(--blanco-dim); margin-bottom:20px; font-weight:300; line-height:1.6;">
+            El cambio de plan se aplica a partir del siguiente ciclo de facturación. Dirígete a recepción para gestionar el cambio.
+          </p>
+          <div class="planes-grid">
+            <div class="plan-card current">
+              <div class="plan-nombre">Plan Simple</div>
+              <div class="plan-precio">$70.000 <span>/ mes</span></div>
+              <div class="plan-feature">Acceso a 1 sede</div>
+              <div class="plan-feature">Horario completo</div>
+              <div class="plan-feature">Vestiarios y duchas</div>
+              <button class="btn-cambiar current" disabled>Plan actual</button>
+            </div>
+            <div class="plan-card">
+              <div class="plan-nombre">Plan Pro</div>
+              <div class="plan-precio">$90.000 <span>/ mes</span></div>
+              <div class="plan-feature">Acceso a todas las sedes</div>
+              <div class="plan-feature">Horario completo</div>
+              <div class="plan-feature">Vestiarios y duchas</div>
+              <button class="btn-cambiar" onclick="openModal('cambiarPlan')">Solicitar cambio</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="danger-zone">
+        <div class="danger-title">⚠ Zona de riesgo</div>
+        <div class="danger-desc">
+          Al cancelar tu membresía perderás el acceso al gimnasio al finalizar el período actual. Esta acción debe confirmarse en recepción.
+        </div>
+        <button class="btn-cancelar" onclick="openModal('cancelar')">Cancelar membresía</button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODAL CANCELAR -->
+<div class="modal-overlay" id="modal-cancelar">
+  <div class="modal">
+    <h2>¿Cancelar membresía?</h2>
+    <p>Tu acceso estará activo hasta el <strong style="color:var(--blanco);">31 de mayo de 2026</strong>. Después de esa fecha tu cuenta quedará inactiva. Deberás confirmar esto en recepción.</p>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal('cancelar')">Volver</button>
+      <button class="btn-modal-confirm" onclick="confirmAction('cancelar')">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMBIO PLAN -->
+<div class="modal-overlay" id="modal-cambiarPlan">
+  <div class="modal">
+    <h2>Cambiar a Plan Pro</h2>
+    <p>Pasarás de <strong style="color:var(--blanco);">$70.000</strong> a <strong style="color:var(--blanco);">$90.000/mes</strong>. El cambio aplica desde el próximo ciclo. Confirma en recepción para aplicar el cambio.</p>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal('cambiarPlan')">Volver</button>
+      <button class="btn-modal-confirm" onclick="confirmAction('cambiarPlan')">Solicitar cambio</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Fecha actual
+  const now = new Date();
+  document.getElementById('topbarDate').textContent = now.toLocaleDateString('es-CO', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // Verificar que hay token y es cliente
+  const token = localStorage.getItem('token');
+  const rol = localStorage.getItem('rol');
+
+  if (!token || rol !== 'cliente') {
+    window.location.href = 'login.html';
+  }
+
+  const headers = { 'Authorization': `Bearer ${token}` };
+
+  // Cargar perfil
+  async function cargarPerfil() {
+    const res = await fetch('http://localhost:3000/cliente/perfil', { headers });
+    const data = await res.json();
+
+    document.getElementById('sidebarName').textContent = data.nombre;
+    document.getElementById('infoNombre').textContent = data.nombre;
+    document.getElementById('infoCc').textContent = data.cc;
+    document.getElementById('infoCorreo').textContent = data.correo;
+    document.getElementById('avatarInitial').textContent = data.nombre
+        .split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    document.getElementById('infoDesde').textContent = new Date(data.fecha_registro)
+        .toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+  // Cargar membresía
+  async function cargarMembresia() {
+    const res = await fetch('http://localhost:3000/cliente/membresia', { headers });
+    const data = await res.json();
+
+    if (!data || !data.plan) return;
+
+    // Plan en sidebar y resumen
+    const planTexto = data.plan === 'pro'
+      ? 'Plan Pro · Todas las sedes'
+      : 'Plan Simple · 1 sede';
+    document.getElementById('sidebarPlan').textContent = planTexto;
+    document.getElementById('infoPlan').textContent = data.plan === 'pro'
+      ? 'Plan Pro — Todas las sedes · $90.000/mes'
+      : 'Plan Simple — 1 sede · $70.000/mes';
+
+    // Fecha vencimiento
+    const vence = new Date(data.fecha_vencimiento);
+    document.getElementById('fechaVencimiento').textContent = vence.toLocaleDateString('es-CO', {
+      day: 'numeric', month: 'long'
+    });
+
+    // Días restantes
+    const diff = Math.ceil((vence - new Date()) / (1000 * 60 * 60 * 24));
+    document.getElementById('diasRestantes').textContent = `Quedan ${diff > 0 ? diff : 0} días`;
+
+    // Badge estado
+    const estadoCard = document.querySelector('.stat-card:first-child');
+    const badge = estadoCard.querySelector('.badge');
+    const sub = estadoCard.querySelector('.stat-sub');
+    estadoCard.className = `stat-card ${data.estado}`;
+    badge.className = `badge ${data.estado}`;
+    badge.innerHTML = `<span class="dot"></span> ${data.estado.charAt(0).toUpperCase() + data.estado.slice(1)}`;
+    sub.textContent = data.estado === 'activa'
+      ? 'Tu membresía está al día'
+      : data.estado === 'vencida'
+      ? 'Tu membresía ha vencido'
+      : 'Tu membresía está suspendida';
+
+    // Planes — marcar el actual
+    document.querySelectorAll('.plan-card').forEach(card => {
+      const nombre = card.querySelector('.plan-nombre').textContent.toLowerCase();
+      const esPlanActual = nombre.includes(data.plan);
+      card.classList.toggle('current', esPlanActual);
+      const btn = card.querySelector('.btn-cambiar');
+      if (esPlanActual) {
+        btn.textContent = 'Plan actual';
+        btn.classList.add('current');
+        btn.disabled = true;
+      } else {
+        btn.textContent = 'Solicitar cambio';
+        btn.classList.remove('current');
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // Cargar pagos
+  async function cargarPagos() {
+    const res = await fetch('http://localhost:3000/cliente/pagos', { headers });
+    const pagos = await res.json();
+
+    const tbody = document.querySelector('#view-pagos tbody');
+    tbody.innerHTML = '';
+
+    if (pagos.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="color:var(--blanco-dim); text-align:center; padding:30px;">Sin pagos registrados</td></tr>`;
+      return;
+    }
+
+    // Último pago en la card de inicio
+    const ultimo = pagos[0];
+    const ultimoMonto = document.querySelector('#view-inicio .stat-card:last-child .stat-value');
+    const ultimoFecha = document.querySelector('#view-inicio .stat-card:last-child .stat-sub');
+    ultimoMonto.textContent = `$${Number(ultimo.monto).toLocaleString('es-CO')}`;
+    ultimoFecha.textContent = new Date(ultimo.fecha_pago).toLocaleDateString('es-CO', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+
+    pagos.forEach((pago, i) => {
+      const fecha = new Date(pago.fecha_pago).toLocaleDateString('es-CO', {
+        day: '2-digit', month: 'short', year: 'numeric'
+      });
+      tbody.innerHTML += `
+    <tr>
+        <td style="color:var(--blanco-dim); font-size:0.78rem;">${String(pagos.length - i).padStart(3, '0')}</td>
+        <td>${fecha}</td>
+        <td>${pago.descripcion || '—'}</td>
+        <td>${pago.plan ? pago.plan.charAt(0).toUpperCase() + pago.plan.slice(1) : '—'}</td>
+        <td class="pago-amount">$${Number(pago.monto).toLocaleString('es-CO')}</td>
+        <td><span class="badge activa"><span class="dot"></span>Pagado</span></td>
+    </tr>`;
+    });
+  }
+
+  // Cerrar sesión
+  document.querySelector('.btn-logout').onclick = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('rol');
+    window.location.href = 'login.html';
+  };
+
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    event.currentTarget.classList.add('active');
+    const titles = { inicio: 'Estado de Cuenta', pagos: 'Historial de Pagos', plan: 'Mi Plan' };
+    document.getElementById('pageTitle').textContent = titles[name];
+  }
+
+  function openModal(id) {
+    document.getElementById('modal-' + id).classList.add('show');
+  }
+
+  function closeModal(id) {
+    document.getElementById('modal-' + id).classList.remove('show');
+  }
+
+  function confirmAction(type) {
+    closeModal(type);
+    alert(type === 'cancelar'
+      ? 'Solicitud registrada. Dirígete a recepción para confirmar la cancelación.'
+      : 'Solicitud de cambio registrada. El recepcionista aplicará el cambio en tu próximo ciclo.');
+  }
+
+  // Inicializar
+  cargarPerfil();
+  cargarMembresia();
+  cargarPagos();
+</script>
+</body>
+</html>

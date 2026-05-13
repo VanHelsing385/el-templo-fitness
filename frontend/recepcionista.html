@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Templo Fitness — Recepción</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rojo: #D62828;
+    --rojo-dark: #A01E1E;
+    --rojo-glow: rgba(214,40,40,0.12);
+    --negro: #0A0A0A;
+    --negro-card: #141414;
+    --negro-input: #1C1C1C;
+    --gris: #2A2A2A;
+    --gris-borde: #2E2E2E;
+    --blanco: #F5F5F5;
+    --blanco-dim: #AAAAAA;
+    --verde: #22C55E;
+    --amarillo: #EAB308;
+    --sidebar-w: 260px;
+  }
+
+  body { font-family: 'Barlow', sans-serif; background: var(--negro); color: var(--blanco); min-height: 100vh; display: flex; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--negro-card);
+    border-right: 1px solid var(--gris-borde);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  }
+  .sidebar-brand { padding: 32px 28px 24px; border-bottom: 1px solid var(--gris-borde); }
+  .brand-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 2px; }
+  .brand-logo span { color: var(--rojo); }
+  .brand-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; letter-spacing: 2px; text-transform: uppercase; color: var(--blanco-dim); margin-top: 3px; font-weight: 600;}
+
+  .sidebar-user { padding: 20px 28px; border-bottom: 1px solid var(--gris-borde); }
+  .user-avatar { width: 44px; height: 44px; background: var(--gris); border: 1px solid var(--gris-borde); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; margin-bottom: 10px; }
+  .user-name { font-weight: 600; font-size: 0.9rem; }
+  .user-role { font-size: 0.72rem; color: var(--rojo); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+
+  .sidebar-nav { flex: 1; padding: 20px 0; }
+  .nav-section { padding: 0 20px 8px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: #a8a8a8; margin-top: 16px; }
+  .nav-item { display: flex; align-items: center; gap: 14px; padding: 12px 28px; font-size: 0.88rem; font-weight: 500; color: var(--blanco-dim); cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; text-decoration: none; }
+  .nav-item:hover { color: var(--blanco); background: rgba(255,255,255,0.04); }
+  .nav-item.active { color: var(--blanco); background: var(--rojo-glow); border-left-color: var(--rojo); }
+  .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+  .sidebar-bottom { padding: 20px 28px; border-top: 1px solid var(--gris-borde); }
+  .btn-logout { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--blanco-dim); cursor: pointer; background: none; border: none; font-family: 'Barlow', sans-serif; font-weight: 500; padding: 0; transition: color 0.15s; }
+  .btn-logout:hover { color: var(--rojo); }
+
+  /* MAIN */
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; }
+  .topbar { background: var(--negro-card); border-bottom: 1px solid var(--gris-borde); padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; }
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; }
+  .topbar-right { font-size: 0.78rem; color: var(--blanco-dim); }
+  .content { padding: 40px; flex: 1; }
+
+  /* VIEW */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* CARDS ROW */
+  .cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--negro-card); border: 1px solid var(--gris-borde); padding: 24px; position: relative; overflow: hidden; }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .stat-card.rojo::before { background: var(--rojo); }
+  .stat-card.verde::before { background: var(--verde); }
+  .stat-card.amarillo::before { background: var(--amarillo); }
+  .stat-card.gris::before { background: var(--gris-borde); }
+  .stat-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; color: var(--blanco-dim); margin-bottom: 12px; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 1px; line-height: 1; }
+  .stat-sub { font-size: 0.72rem; color: var(--blanco-dim); font-weight: 300; margin-top: 5px; }
+
+  /* SECTION */
+  .section-block { background: var(--negro-card); border: 1px solid var(--gris-borde); margin-bottom: 24px; }
+  .section-header { padding: 20px 28px; border-bottom: 1px solid var(--gris-borde); display: flex; align-items: center; justify-content: space-between; }
+  .section-header-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; }
+  .section-body { padding: 24px 28px; }
+
+  /* BADGES */
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; padding: 3px 10px; font-weight: 600; }
+  .badge.activa { background: rgba(34,197,94,0.15); color: var(--verde); }
+  .badge.vencida { background: rgba(214,40,40,0.15); color: #ff8080; }
+  .badge.suspendida { background: rgba(234,179,8,0.15); color: var(--amarillo); }
+  .dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .activa .dot { background: var(--verde); }
+  .vencida .dot { background: #ff8080; }
+  .suspendida .dot { background: var(--amarillo); }
+
+  /* SEARCH */
+  .search-row { display: flex; gap: 12px; margin-bottom: 24px; }
+  .search-input-wrap { flex: 1; position: relative; }
+  .search-input-wrap input {
+    width: 100%; background: var(--negro-card); border: 1px solid var(--gris-borde);
+    color: var(--blanco); padding: 13px 18px 13px 44px;
+    font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input-wrap input:focus { border-color: var(--rojo); }
+  .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--blanco-dim); font-size: 0.9rem; }
+  .btn-primary { background: var(--rojo); border: none; color: var(--blanco); padding: 13px 28px; font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 3px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+  .btn-primary:hover { background: var(--rojo-dark); }
+  .btn-secondary { background: transparent; border: 1px solid var(--gris-borde); color: var(--blanco-dim); padding: 13px 20px; font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn-secondary:hover { border-color: var(--rojo); color: var(--rojo); }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; }
+  th { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 2px; text-transform: uppercase; color: var(--blanco-dim); padding: 10px 16px; text-align: left; border-bottom: 1px solid var(--gris-borde); }
+  td { padding: 14px 16px; font-size: 0.87rem; border-bottom: 1px solid #1E1E1E; color: var(--blanco); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.025); cursor: pointer; }
+  .td-dim { color: var(--blanco-dim); font-size: 0.78rem; }
+
+  .btn-ver { padding: 6px 16px; background: transparent; border: 1px solid var(--gris-borde); color: var(--blanco-dim); font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
+  .btn-ver:hover { border-color: var(--rojo); color: var(--blanco); }
+
+  /* FORMULARIO */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; color: var(--blanco-dim); }
+  .form-group input, .form-group select {
+    background: var(--negro-input); border: 1px solid var(--gris-borde);
+    color: var(--blanco); padding: 12px 16px;
+    font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none;
+    transition: border-color 0.2s; -webkit-appearance: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--rojo); }
+  .form-group input::placeholder { color: #444; }
+  .form-group select option { background: var(--negro-card); }
+
+  .form-actions { margin-top: 24px; display: flex; gap: 12px; }
+
+  /* PERFIL CLIENTE */
+  .perfil-header { display: flex; align-items: center; gap: 20px; margin-bottom: 28px; }
+  .perfil-avatar { width: 60px; height: 60px; background: var(--rojo); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; flex-shrink: 0; }
+  .perfil-name { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; line-height: 1; }
+  .perfil-cc { font-size: 0.8rem; color: var(--blanco-dim); margin-top: 4px; }
+
+  .pago-amount { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 700; color: var(--verde); }
+
+  /* PAGO FORM */
+  .pago-block { background: rgba(214,40,40,0.05); border: 1px solid rgba(214,40,40,0.2); padding: 24px; margin-bottom: 24px; }
+  .pago-block-title { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 2px; color: var(--rojo); margin-bottom: 16px; }
+
+  /* NOTIF */
+  .notif { display: none; padding: 14px 18px; margin-top: 16px; font-size: 0.85rem; font-weight: 500; }
+  .notif.success { background: rgba(34,197,94,0.1); border: 1px solid var(--verde); color: var(--verde); display: block; }
+  .notif.error { background: rgba(214,40,40,0.1); border: 1px solid var(--rojo); color: #ff8080; display: block; }
+
+  /* BTN BACK */
+  .btn-back { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--blanco-dim); cursor: pointer; background: none; border: none; font-family: 'Barlow', sans-serif; margin-bottom: 24px; padding: 0; transition: color 0.15s; }
+  .btn-back:hover { color: var(--blanco); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">El <span>Templo</span></div>
+    <div class="brand-sub">Panel de Recepción</div>
+  </div>
+  <div class="sidebar-user">
+    <div class="user-avatar">RC</div>
+    <div class="user-name">Recepcionista</div>
+    <div class="user-role">● Recepción</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Gestión</div>
+    <a class="nav-item active" onclick="showView('inicio', this)">
+      <span class="nav-icon">⬛</span> Panel principal
+    </a>
+    <a class="nav-item" onclick="showView('clientes', this)">
+      <span class="nav-icon">👥</span> Clientes
+    </a>
+    <a class="nav-item" onclick="showView('registrar', this)">
+      <span class="nav-icon">➕</span> Nuevo cliente
+    </a>
+    <a class="nav-item" onclick="showView('pagos', this)">
+      <span class="nav-icon">💰</span> Registrar pago
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <button class="btn-logout" onclick="window.location.href='login.html'">⟵ Cerrar sesión</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="page-title" id="pageTitle">Panel Principal</div>
+    <div class="topbar-right" id="topbarDate"></div>
+  </div>
+
+  <div class="content">
+
+    <!-- VIEW: INICIO -->
+    <div class="view active" id="view-inicio">
+      <div class="cards-row">
+        <div class="stat-card verde">
+          <div class="stat-label">Membresías activas</div>
+          <div class="stat-value" style="color:var(--verde)">47</div>
+          <div class="stat-sub">Al día este mes</div>
+        </div>
+        <div class="stat-card amarillo">
+          <div class="stat-label">Por vencer (7 días)</div>
+          <div class="stat-value" style="color:var(--amarillo)">8</div>
+          <div class="stat-sub">Requieren renovación</div>
+        </div>
+        <div class="stat-card rojo">
+          <div class="stat-label">Vencidas / deuda</div>
+          <div class="stat-value" style="color:#ff8080">5</div>
+          <div class="stat-sub">Sin pago registrado</div>
+        </div>
+        <div class="stat-card gris">
+          <div class="stat-label">Total clientes</div>
+          <div class="stat-value" style="color:var(--blanco)">60</div>
+          <div class="stat-sub">En el sistema</div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="section-header">
+          <div class="section-header-title">Actividad Reciente</div>
+        </div>
+        <div style="padding: 0 28px 8px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Cliente</th><th>CC</th><th>Acción</th><th>Fecha</th><th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Juan Armella</td><td class="td-dim">1001234567</td>
+                <td class="td-dim">Pago registrado</td><td class="td-dim">02 May 2026</td>
+                <td><span class="badge activa"><span class="dot"></span>Activa</span></td>
+              </tr>
+              <tr>
+                <td>María Torres</td><td class="td-dim">1002345678</td>
+                <td class="td-dim">Cambio a Plan Pro</td><td class="td-dim">01 May 2026</td>
+                <td><span class="badge activa"><span class="dot"></span>Activa</span></td>
+              </tr>
+              <tr>
+                <td>Carlos Rincón</td><td class="td-dim">1003456789</td>
+                <td class="td-dim">Cliente registrado</td><td class="td-dim">30 Abr 2026</td>
+                <td><span class="badge activa"><span class="dot"></span>Activa</span></td>
+              </tr>
+              <tr>
+                <td>Daniela Mora</td><td class="td-dim">1004567890</td>
+                <td class="td-dim">Sin pago — vencida</td><td class="td-dim">28 Abr 2026</td>
+                <td><span class="badge vencida"><span class="dot"></span>Vencida</span></td>
+              </tr>
+              <tr>
+                <td>Andrés Peña</td><td class="td-dim">1005678901</td>
+                <td class="td-dim">Sin pago — suspendida</td><td class="td-dim">15 Abr 2026</td>
+                <td><span class="badge suspendida"><span class="dot"></span>Suspendida</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: CLIENTES -->
+    <div class="view" id="view-clientes">
+      <div id="lista-clientes">
+        <div class="search-row">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar por nombre o cédula..." oninput="filtrarClientes()">
+          </div>
+          <button class="btn-secondary" onclick="filtrarClientes()">Buscar</button>
+        </div>
+
+        <div class="section-block">
+          <div class="section-header">
+            <div class="section-header-title">Lista de Clientes</div>
+            <span style="font-size:0.75rem; color:var(--blanco-dim)" id="totalClientes">60 clientes</span>
+          </div>
+          <div style="padding: 0 28px 8px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nombre</th><th>CC</th><th>Plan</th><th>Vencimiento</th><th>Estado</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="clientesTbody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERFIL CLIENTE -->
+      <div id="perfil-cliente" style="display:none;">
+        <button class="btn-back" onclick="cerrarPerfil()">← Volver a lista</button>
+
+        <div class="perfil-header">
+          <div class="perfil-avatar" id="perfilAvatar">JA</div>
+          <div>
+            <div class="perfil-name" id="perfilNombre">Juan Armella</div>
+            <div class="perfil-cc" id="perfilCc">CC: 1001234567 · Plan Simple</div>
+          </div>
+          <div style="margin-left: auto;">
+            <span class="badge activa" id="perfilBadge"><span class="dot"></span>Activa</span>
+          </div>
+        </div>
+
+        <div class="section-block" style="margin-bottom:24px;">
+          <div class="section-header">
+            <div class="section-header-title">Datos del Cliente</div>
+            <button class="btn-secondary" onclick="editarCliente()" style="padding:8px 16px; font-size:0.8rem;">Editar datos</button>
+          </div>
+          <div class="section-body">
+            <table>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.8rem; width:200px;">Nombre completo</td>
+                <td id="detNombre">—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.8rem;">Cédula</td>
+                <td id="detCc">—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.8rem;">Celular</td>
+                <td id="detCelular">—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.8rem;">Correo</td>
+                <td id="detCorreo">—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.8rem;">Plan</td>
+                <td id="detPlan">—</td>
+              </tr>
+              <tr>
+                <td style="color:var(--blanco-dim); font-size:0.8rem;">Vencimiento</td>
+                <td id="detVencimiento">—</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="pago-block">
+          <div class="pago-block-title">⚡ Registrar pago para este cliente</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Monto</label>
+              <input type="number" id="pagoMonto" placeholder="70000">
+            </div>
+            <div class="form-group">
+              <label>Plan a aplicar</label>
+              <select id="pagoPlan">
+                <option value="simple">Plan Simple — $70.000</option>
+                <option value="pro">Plan Pro — $90.000</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>Nota (opcional)</label>
+              <input type="text" id="pagoNota" placeholder="Ej: Pago en efectivo mayo 2026">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" onclick="registrarPagoDesdeCliente()">Registrar pago</button>
+          </div>
+          <div class="notif" id="notifPagoCliente"></div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-header">
+            <div class="section-header-title">Historial de Pagos</div>
+          </div>
+          <div style="padding: 0 28px 8px;">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Fecha</th><th>Descripción</th><th>Plan</th><th>Monto</th></tr>
+              </thead>
+              <tbody id="historialPagosTbody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: REGISTRAR -->
+    <div class="view" id="view-registrar">
+      <div class="section-block">
+        <div class="section-header">
+          <div class="section-header-title">Registrar Nuevo Cliente</div>
+        </div>
+        <div class="section-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nombre completo *</label>
+              <input type="text" id="regNombre" placeholder="Nombre y apellido">
+            </div>
+            <div class="form-group">
+              <label>Cédula de ciudadanía *</label>
+              <input type="text" id="regCc" placeholder="Sin puntos ni guiones">
+            </div>
+            <div class="form-group">
+              <label>Celular *</label>
+              <input type="text" id="regCelular" placeholder="3001234567">
+            </div>
+            <div class="form-group">
+              <label>Correo electrónico *</label>
+              <input type="email" id="regCorreo" placeholder="cliente@email.com">
+            </div>
+            <div class="form-group">
+              <label>Contraseña inicial *</label>
+              <input type="password" id="regPass" placeholder="Mínimo 6 caracteres">
+            </div>
+            <div class="form-group">
+              <label>Plan de membresía *</label>
+              <select id="regPlan">
+                <option value="simple">Plan Simple — $70.000 / 1 sede</option>
+                <option value="pro">Plan Pro — $90.000 / todas las sedes</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Referencia huella biométrica</label>
+              <input type="text" id="regHuella" placeholder="ID del lector biométrico">
+            </div>
+            <div class="form-group">
+              <label>Primer pago (efectivo) *</label>
+              <input type="number" id="regPago" placeholder="70000">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary" onclick="registrarCliente()">Registrar cliente</button>
+            <button class="btn-secondary" onclick="limpiarFormulario()">Limpiar</button>
+          </div>
+          <div class="notif" id="notifRegistro"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: PAGOS -->
+    <div class="view" id="view-pagos">
+      <div class="section-block">
+        <div class="section-header">
+          <div class="section-header-title">Registrar Pago</div>
+        </div>
+        <div class="section-body">
+          <p style="font-size:0.83rem; color:var(--blanco-dim); margin-bottom:24px; font-weight:300; line-height:1.6;">
+            Busca al cliente por cédula y registra el pago recibido en efectivo. El sistema actualizará automáticamente el estado de su membresía.
+          </p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Cédula del cliente *</label>
+              <input type="text" id="pagoCC" placeholder="Ingresa la cédula">
+            </div>
+            <div class="form-group" style="justify-content:flex-end;">
+              <label> </label>
+              <button class="btn-secondary" onclick="buscarClientePago()">Buscar cliente</button>
+            </div>
+          </div>
+
+          <div id="clienteEncontrado" style="display:none; margin-top:20px;">
+            <div style="background:var(--negro-input); border:1px solid var(--gris-borde); padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; gap:16px;">
+              <div style="width:36px;height:36px;background:var(--rojo);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;" id="pagoBadgeAvatar">JA</div>
+              <div>
+                <div style="font-weight:600; font-size:0.9rem;" id="pagoClienteNombre">Juan Armella</div>
+                <div style="font-size:0.75rem; color:var(--blanco-dim);" id="pagoClienteInfo">Plan Simple · Membresía activa</div>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Monto recibido *</label>
+                <input type="number" id="pagoMonto2" placeholder="70000">
+              </div>
+              <div class="form-group">
+                <label>Plan a aplicar *</label>
+                <select id="pagoPlan2">
+                  <option value="simple">Plan Simple — $70.000</option>
+                  <option value="pro">Plan Pro — $90.000</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label>Descripción (opcional)</label>
+                <input type="text" id="pagoDesc" placeholder="Ej: Pago efectivo mayo 2026">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-primary" onclick="registrarPago()">Registrar pago</button>
+            </div>
+            <div class="notif" id="notifPago"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // Token y verificación
+  const token = localStorage.getItem('token');
+  const rol = localStorage.getItem('rol');
+
+  if (!token || rol !== 'recepcionista') {
+    window.location.href = 'login.html';
+  }
+
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+
+  // Fecha actual
+  const now = new Date();
+  document.getElementById('topbarDate').textContent = now.toLocaleDateString('es-CO', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // ---- NAVEGACIÓN ----
+  function showView(name, el) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    if (el) el.classList.add('active');
+    const titles = { inicio: 'Panel Principal', clientes: 'Clientes', registrar: 'Nuevo Cliente', pagos: 'Registrar Pago' };
+    document.getElementById('pageTitle').textContent = titles[name];
+    if (name === 'clientes') cargarClientes();
+    if (name === 'inicio') cargarInicio();
+  }
+
+  // ---- CARGAR PANEL INICIO ----
+  async function cargarInicio() {
+    const res = await fetch('http://localhost:3000/recepcionista/clientes', { headers });
+    const clientes = await res.json();
+
+    const total = clientes.length;
+    const activas = clientes.filter(c => c.estado_membresia === 'activa').length;
+    const vencidas = clientes.filter(c => c.estado_membresia === 'vencida').length;
+
+    const hoy = new Date();
+    const en7dias = new Date();
+    en7dias.setDate(en7dias.getDate() + 7);
+    const porVencer = clientes.filter(c => {
+      if (!c.fecha_vencimiento) return false;
+      const vence = new Date(c.fecha_vencimiento);
+      return vence >= hoy && vence <= en7dias && c.estado_membresia === 'activa';
+    }).length;
+
+    document.querySelector('.stat-card.verde .stat-value').textContent = activas;
+    document.querySelector('.stat-card.amarillo .stat-value').textContent = porVencer;
+    document.querySelector('.stat-card.rojo .stat-value').textContent = vencidas;
+    document.querySelector('.stat-card.gris .stat-value').textContent = total;
+
+    // Actividad reciente — últimos 5 clientes
+    const tbody = document.querySelector('#view-inicio tbody');
+    tbody.innerHTML = clientes.slice(0, 5).map(c => `
+      <tr>
+        <td>${c.nombre}</td>
+        <td class="td-dim">${c.cc}</td>
+        <td class="td-dim">Cliente registrado</td>
+        <td class="td-dim">${c.fecha_vencimiento ? new Date(c.fecha_vencimiento).toLocaleDateString('es-CO') : '—'}</td>
+        <td>${badgeHtml(c.estado_membresia || 'suspendida')}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ---- CARGAR CLIENTES ----
+  let todosLosClientes = [];
+
+  async function cargarClientes() {
+    const res = await fetch('http://localhost:3000/recepcionista/clientes', { headers });
+    todosLosClientes = await res.json();
+    renderClientes(todosLosClientes);
+  }
+
+  function renderClientes(lista) {
+    const tbody = document.getElementById('clientesTbody');
+    document.getElementById('totalClientes').textContent = lista.length + ' clientes';
+    tbody.innerHTML = lista.map(c => `
+      <tr onclick="verCliente(${c.id})">
+        <td><strong>${c.nombre}</strong></td>
+        <td class="td-dim">${c.cc}</td>
+        <td class="td-dim">${c.plan ? capitalize(c.plan) : '—'}</td>
+        <td class="td-dim">${c.fecha_vencimiento ? new Date(c.fecha_vencimiento).toLocaleDateString('es-CO') : '—'}</td>
+        <td>${badgeHtml(c.estado_membresia || 'suspendida')}</td>
+        <td><button class="btn-ver" onclick="event.stopPropagation(); verCliente(${c.id})">Ver perfil</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function filtrarClientes() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtrados = todosLosClientes.filter(c =>
+      c.nombre.toLowerCase().includes(q) || c.cc.includes(q)
+    );
+    renderClientes(filtrados);
+  }
+
+  // ---- VER PERFIL ----
+  let clienteActualId = null;
+
+  async function verCliente(id) {
+    clienteActualId = id;
+    const res = await fetch(`http://localhost:3000/recepcionista/clientes/${id}`, { headers });
+    const c = await res.json();
+
+    const initials = c.nombre.split(' ').map(w => w[0]).slice(0, 2).join('');
+    document.getElementById('perfilAvatar').textContent = initials;
+    document.getElementById('perfilNombre').textContent = c.nombre;
+    document.getElementById('perfilCc').textContent = `CC: ${c.cc} · Plan ${capitalize(c.plan || '—')}`;
+    document.getElementById('perfilBadge').className = `badge ${c.estado_membresia || 'suspendida'}`;
+    document.getElementById('perfilBadge').innerHTML = `<span class="dot"></span>${capitalize(c.estado_membresia || 'suspendida')}`;
+
+    document.getElementById('detNombre').textContent = c.nombre;
+    document.getElementById('detCc').textContent = c.cc;
+    document.getElementById('detCelular').textContent = c.celular || '—';
+    document.getElementById('detCorreo').textContent = c.correo;
+    document.getElementById('detPlan').textContent = c.plan === 'pro'
+      ? 'Plan Pro — $90.000/mes · todas las sedes'
+      : 'Plan Simple — $70.000/mes · 1 sede';
+    document.getElementById('detVencimiento').textContent = c.fecha_vencimiento
+      ? new Date(c.fecha_vencimiento).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })
+      : '—';
+
+    // Historial de pagos
+    const pagos = c.pagos || [];
+    document.getElementById('historialPagosTbody').innerHTML = pagos.length
+      ? pagos.map((p, i) => `
+          <tr>
+            <td class="td-dim">${String(pagos.length - i).padStart(3, '0')}</td>
+            <td>${new Date(p.fecha_pago).toLocaleDateString('es-CO')}</td>
+            <td class="td-dim">${p.descripcion || '—'}</td>
+            <td class="td-dim">${p.plan ? capitalize(p.plan) : '—'}</td>
+            <td class="pago-amount">$${Number(p.monto).toLocaleString('es-CO')}</td>
+          </tr>`).join('')
+      : `<tr><td colspan="5" style="color:var(--blanco-dim);text-align:center;padding:24px;">Sin pagos registrados</td></tr>`;
+
+    document.getElementById('lista-clientes').style.display = 'none';
+    document.getElementById('perfil-cliente').style.display = 'block';
+    document.getElementById('notifPagoCliente').className = 'notif';
+  }
+
+  function cerrarPerfil() {
+    document.getElementById('lista-clientes').style.display = 'block';
+    document.getElementById('perfil-cliente').style.display = 'none';
+  }
+
+  // ---- EDITAR CLIENTE ----
+  function editarCliente() {
+    const nombre = prompt('Nuevo nombre:', document.getElementById('detNombre').textContent);
+    if (!nombre) return;
+    const celular = prompt('Nuevo celular:', document.getElementById('detCelular').textContent);
+    const correo = prompt('Nuevo correo:', document.getElementById('detCorreo').textContent);
+
+    fetch(`http://localhost:3000/recepcionista/clientes/${clienteActualId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ nombre, celular, correo })
+    })
+    .then(r => r.json())
+    .then(data => {
+      alert(data.mensaje || 'Cliente actualizado');
+      verCliente(clienteActualId);
+    });
+  }
+
+  // ---- REGISTRAR PAGO DESDE PERFIL ----
+  async function registrarPagoDesdeCliente() {
+    const monto = document.getElementById('pagoMonto').value;
+    const plan = document.getElementById('pagoPlan').value;
+    const descripcion = document.getElementById('pagoNota').value;
+    const notif = document.getElementById('notifPagoCliente');
+
+    if (!monto) {
+      notif.textContent = 'Ingresa el monto del pago.';
+      notif.className = 'notif error';
+      return;
+    }
+
+    const res = await fetch('http://localhost:3000/recepcionista/pagos', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ usuario_id: clienteActualId, monto, plan, descripcion })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      notif.textContent = `✓ Pago de $${parseInt(monto).toLocaleString('es-CO')} registrado. Membresía actualizada.`;
+      notif.className = 'notif success';
+      document.getElementById('pagoMonto').value = '';
+      document.getElementById('pagoNota').value = '';
+      verCliente(clienteActualId);
+    } else {
+      notif.textContent = data.error || 'Error al registrar el pago.';
+      notif.className = 'notif error';
+    }
+  }
+
+  // ---- REGISTRAR NUEVO CLIENTE ----
+  async function registrarCliente() {
+    const notif = document.getElementById('notifRegistro');
+    const nombre = document.getElementById('regNombre').value.trim();
+    const cc = document.getElementById('regCc').value.trim();
+    const celular = document.getElementById('regCelular').value.trim();
+    const correo = document.getElementById('regCorreo').value.trim();
+    const contrasena = document.getElementById('regPass').value.trim();
+    const plan = document.getElementById('regPlan').value;
+    const monto = document.getElementById('regPago').value.trim();
+
+    if (!nombre || !cc || !celular || !correo || !contrasena || !monto) {
+      notif.textContent = 'Por favor completa todos los campos obligatorios (*).';
+      notif.className = 'notif error';
+      return;
+    }
+
+    const res = await fetch('http://localhost:3000/recepcionista/clientes', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ nombre, cc, celular, correo, contrasena, plan })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Registrar el primer pago también
+      const clienteRes = await fetch('http://localhost:3000/recepcionista/clientes', { headers });
+      const clientes = await clienteRes.json();
+      const nuevo = clientes.find(c => c.cc === cc);
+
+      if (nuevo) {
+        await fetch('http://localhost:3000/recepcionista/pagos', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            usuario_id: nuevo.id,
+            monto,
+            plan,
+            descripcion: 'Inscripción inicial'
+          })
+        });
+      }
+
+      notif.textContent = '✓ Cliente registrado y primer pago guardado correctamente.';
+      notif.className = 'notif success';
+      limpiarFormulario();
+    } else {
+      notif.textContent = data.error || 'Error al registrar el cliente.';
+      notif.className = 'notif error';
+    }
+  }
+
+  function limpiarFormulario() {
+    ['regNombre','regCc','regCelular','regCorreo','regPass','regHuella','regPago'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+  }
+
+  // ---- BUSCAR CLIENTE PARA PAGO ----
+  let clientePagoId = null;
+
+  async function buscarClientePago() {
+    const cc = document.getElementById('pagoCC').value.trim();
+    const notif = document.getElementById('notifPago');
+    const div = document.getElementById('clienteEncontrado');
+    notif.className = 'notif';
+
+    if (!cc) {
+      notif.textContent = 'Ingresa una cédula para buscar.';
+      notif.className = 'notif error';
+      return;
+    }
+
+    const res = await fetch(`http://localhost:3000/recepcionista/clientes?buscar=${cc}`, { headers });
+    const clientes = await res.json();
+    const c = clientes.find(x => x.cc === cc);
+
+    if (!c) {
+      div.style.display = 'none';
+      notif.textContent = 'No se encontró ningún cliente con esa cédula.';
+      notif.className = 'notif error';
+      return;
+    }
+
+    clientePagoId = c.id;
+    const initials = c.nombre.split(' ').map(w => w[0]).slice(0, 2).join('');
+    document.getElementById('pagoBadgeAvatar').textContent = initials;
+    document.getElementById('pagoClienteNombre').textContent = c.nombre;
+    document.getElementById('pagoClienteInfo').textContent = `Plan ${capitalize(c.plan || '—')} · Membresía ${capitalize(c.estado_membresia || '—')}`;
+    div.style.display = 'block';
+  }
+
+  async function registrarPago() {
+    const monto = document.getElementById('pagoMonto2').value;
+    const plan = document.getElementById('pagoPlan2').value;
+    const descripcion = document.getElementById('pagoDesc').value;
+    const notif = document.getElementById('notifPago');
+
+    if (!monto) {
+      notif.textContent = 'Ingresa el monto del pago.';
+      notif.className = 'notif error';
+      return;
+    }
+
+    const res = await fetch('http://localhost:3000/recepcionista/pagos', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ usuario_id: clientePagoId, monto, plan, descripcion })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      notif.textContent = `✓ Pago de $${parseInt(monto).toLocaleString('es-CO')} registrado. Membresía actualizada.`;
+      notif.className = 'notif success';
+      document.getElementById('pagoMonto2').value = '';
+      document.getElementById('pagoDesc').value = '';
+    } else {
+      notif.textContent = data.error || 'Error al registrar el pago.';
+      notif.className = 'notif error';
+    }
+  }
+
+  // ---- UTILS ----
+  function badgeHtml(estado) {
+    return `<span class="badge ${estado}"><span class="dot"></span>${capitalize(estado)}</span>`;
+  }
+
+  function capitalize(s) {
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
+  }
+
+  // ---- CERRAR SESIÓN ----
+  document.querySelector('.btn-logout').onclick = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('rol');
+    window.location.href = 'login.html';
+  };
+
+  // Init
+  cargarInicio();
+</script>
+</body>
+</html>

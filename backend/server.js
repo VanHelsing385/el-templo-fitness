@@ -1,7 +1,10 @@
 const express = require('express');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+
+app.use(cors()); // Para permitir las peticiones del frontend
 app.use(express.json()); // Para leer el body de las peticiones
 
 
