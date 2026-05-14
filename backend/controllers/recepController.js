@@ -1,6 +1,18 @@
 const db = require('../DB');
 const bcrypt = require('bcryptjs');
 
+async function getPerfil(req, res) {
+    try {
+        const [rows] = await db.query(
+            'SELECT nombre FROM usuarios WHERE id = ?',
+            [req.usuario.id]
+        );
+        res.json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
 async function registrarCliente(req, res) {
     const { nombre, cc, celular, correo, contrasena, plan } = req.body;
 
@@ -82,7 +94,7 @@ async function getCliente(req, res) {
         }
 
         const [pagos] = await db.query(
-            `SELECT monto, fecha_pago, descripcion 
+            `SELECT monto, fecha_pago, descripcion, plan 
              FROM pagos WHERE usuario_id = ?
              ORDER BY fecha_pago DESC`,
             [req.params.id]
@@ -132,8 +144,8 @@ async function registrarPago(req, res) {
 
     try {
         await db.query(
-            'INSERT INTO pagos (usuario_id, monto, descripcion) VALUES (?, ?, ?)',
-            [usuario_id, monto, descripcion]
+            'INSERT INTO pagos (usuario_id, monto, descripcion, plan) VALUES (?, ?, ?, ?)',
+            [usuario_id, monto, descripcion, plan]
         );
 
         const fechaInicio = new Date();
@@ -154,4 +166,4 @@ async function registrarPago(req, res) {
     }
 }
 
-module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago };
+module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil };

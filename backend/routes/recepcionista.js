@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { verificarToken, soloRol } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
-const { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, verPagosCliente } = require('../controllers/recepController');
+const { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil } = require('../controllers/recepController');
 
 router.use(verificarToken);
 router.use(soloRol('recepcionista'));
@@ -47,5 +47,6 @@ router.put('/clientes/:id', [
 
 router.get('/clientes', listarClientes);
 router.get('/clientes/:id', getCliente);
+router.get('/perfil', getPerfil);
 
 module.exports = router;

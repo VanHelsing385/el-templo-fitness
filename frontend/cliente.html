@@ -784,7 +784,7 @@
               <div class="plan-feature">Acceso a todas las sedes</div>
               <div class="plan-feature">Horario completo</div>
               <div class="plan-feature">Vestiarios y duchas</div>
-              <button class="btn-cambiar" onclick="openModal('cambiarPlan')">Solicitar cambio</button>
+              <button class="btn-cambiar" id="btnCambiarPlan">Solicitar cambio</button>
             </div>
           </div>
         </div>
@@ -817,8 +817,8 @@
 <!-- MODAL CAMBIO PLAN -->
 <div class="modal-overlay" id="modal-cambiarPlan">
   <div class="modal">
-    <h2>Cambiar a Plan Pro</h2>
-    <p>Pasarás de <strong style="color:var(--blanco);">$70.000</strong> a <strong style="color:var(--blanco);">$90.000/mes</strong>. El cambio aplica desde el próximo ciclo. Confirma en recepción para aplicar el cambio.</p>
+    <h2 id="modalPlanTitulo">Cambiar a Plan Pro</h2>
+    <p id="modalPlanTexto">Pasarás de <strong style="color:var(--blanco);">$70.000</strong> a <strong style="color:var(--blanco);">$90.000/mes</strong>. El cambio aplica desde el próximo ciclo. Confirma en recepción para aplicar el cambio.</p>
     <div class="modal-actions">
       <button class="btn-modal-cancel" onclick="closeModal('cambiarPlan')">Volver</button>
       <button class="btn-modal-confirm" onclick="confirmAction('cambiarPlan')">Solicitar cambio</button>
@@ -858,26 +858,29 @@
         .toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-  // Cargar membresía
-  async function cargarMembresia() {
+// Cargar membresía
+async function cargarMembresia() {
     const res = await fetch('http://localhost:3000/cliente/membresia', { headers });
     const data = await res.json();
 
     if (!data || !data.plan) return;
 
+    // Guardar plan actual globalmente para usarlo en el modal
+    window.planActual = data.plan;
+
     // Plan en sidebar y resumen
     const planTexto = data.plan === 'pro'
-      ? 'Plan Pro · Todas las sedes'
-      : 'Plan Simple · 1 sede';
+        ? 'Plan Pro · Todas las sedes'
+        : 'Plan Simple · 1 sede';
     document.getElementById('sidebarPlan').textContent = planTexto;
     document.getElementById('infoPlan').textContent = data.plan === 'pro'
-      ? 'Plan Pro — Todas las sedes · $90.000/mes'
-      : 'Plan Simple — 1 sede · $70.000/mes';
+        ? 'Plan Pro — Todas las sedes · $90.000/mes'
+        : 'Plan Simple — 1 sede · $70.000/mes';
 
     // Fecha vencimiento
     const vence = new Date(data.fecha_vencimiento);
     document.getElementById('fechaVencimiento').textContent = vence.toLocaleDateString('es-CO', {
-      day: 'numeric', month: 'long'
+        day: 'numeric', month: 'long'
     });
 
     // Días restantes
@@ -892,28 +895,50 @@
     badge.className = `badge ${data.estado}`;
     badge.innerHTML = `<span class="dot"></span> ${data.estado.charAt(0).toUpperCase() + data.estado.slice(1)}`;
     sub.textContent = data.estado === 'activa'
-      ? 'Tu membresía está al día'
-      : data.estado === 'vencida'
-      ? 'Tu membresía ha vencido'
-      : 'Tu membresía está suspendida';
+        ? 'Tu membresía está al día'
+        : data.estado === 'vencida'
+        ? 'Tu membresía ha vencido'
+        : 'Tu membresía está suspendida';
 
     // Planes — marcar el actual
     document.querySelectorAll('.plan-card').forEach(card => {
-      const nombre = card.querySelector('.plan-nombre').textContent.toLowerCase();
-      const esPlanActual = nombre.includes(data.plan);
-      card.classList.toggle('current', esPlanActual);
-      const btn = card.querySelector('.btn-cambiar');
-      if (esPlanActual) {
-        btn.textContent = 'Plan actual';
-        btn.classList.add('current');
-        btn.disabled = true;
-      } else {
-        btn.textContent = 'Solicitar cambio';
-        btn.classList.remove('current');
-        btn.disabled = false;
-      }
+        const nombre = card.querySelector('.plan-nombre').textContent.toLowerCase();
+        const esPlanActual = nombre.includes(data.plan);
+        card.classList.toggle('current', esPlanActual);
+        const btn = card.querySelector('.btn-cambiar');
+        if (esPlanActual) {
+            btn.textContent = 'Plan actual';
+            btn.classList.add('current');
+            btn.disabled = true;
+            btn.onclick = null;
+        } else {
+            btn.textContent = 'Solicitar cambio';
+            btn.classList.remove('current');
+            btn.disabled = false;
+            btn.onclick = () => openModal('cambiarPlan');
+        }
     });
-  }
+
+    // Fecha en modal cancelar
+    const fechaModal = vence.toLocaleDateString('es-CO', {
+        day: 'numeric', month: 'long', year: 'numeric'
+    });
+    document.querySelector('#modal-cancelar p').innerHTML =
+        `Tu acceso estará activo hasta el <strong style="color:var(--blanco);">${fechaModal}</strong>. Después de esa fecha tu cuenta quedará inactiva. Deberás confirmar esto en recepción.`;
+}
+
+function openModal(id) {
+    if (id === 'cambiarPlan') {
+        const esPro = window.planActual === 'pro';
+        document.getElementById('modalPlanTitulo').textContent = esPro
+            ? 'Cambiar a Plan Simple'
+            : 'Cambiar a Plan Pro';
+        document.getElementById('modalPlanTexto').innerHTML = esPro
+            ? 'Pasarás de <strong style="color:var(--blanco);">$90.000</strong> a <strong style="color:var(--blanco);">$70.000/mes</strong>. El cambio aplica desde el próximo ciclo. Confirma en recepción para aplicar el cambio.'
+            : 'Pasarás de <strong style="color:var(--blanco);">$70.000</strong> a <strong style="color:var(--blanco);">$90.000/mes</strong>. El cambio aplica desde el próximo ciclo. Confirma en recepción para aplicar el cambio.';
+    }
+    document.getElementById('modal-' + id).classList.add('show');
+}
 
   // Cargar pagos
   async function cargarPagos() {
@@ -952,7 +977,7 @@
     </tr>`;
     });
   }
-
+  
   // Cerrar sesión
   document.querySelector('.btn-logout').onclick = () => {
     localStorage.removeItem('token');
@@ -967,10 +992,6 @@
     event.currentTarget.classList.add('active');
     const titles = { inicio: 'Estado de Cuenta', pagos: 'Historial de Pagos', plan: 'Mi Plan' };
     document.getElementById('pageTitle').textContent = titles[name];
-  }
-
-  function openModal(id) {
-    document.getElementById('modal-' + id).classList.add('show');
   }
 
   function closeModal(id) {

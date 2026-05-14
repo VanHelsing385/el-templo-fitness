@@ -131,6 +131,7 @@
     color: var(--blanco); padding: 12px 16px;
     font-family: 'Barlow', sans-serif; font-size: 0.9rem; outline: none;
     transition: border-color 0.2s; -webkit-appearance: none;
+    appearance: none;
   }
   .form-group input:focus, .form-group select:focus { border-color: var(--rojo); }
   .form-group input::placeholder { color: #444; }
@@ -316,46 +317,51 @@
         </div>
 
         <div class="section-block" style="margin-bottom:24px;">
-          <div class="section-header">
-            <div class="section-header-title">Datos del Cliente</div>
-            <button class="btn-secondary" onclick="editarCliente()" style="padding:8px 16px; font-size:0.8rem;">Editar datos</button>
-          </div>
-          <div class="section-body">
-            <table>
-              <tr>
-                <td style="color:var(--blanco-dim); font-size:0.8rem; width:200px;">Nombre completo</td>
-                <td id="detNombre">—</td>
-              </tr>
-              <tr>
-                <td style="color:var(--blanco-dim); font-size:0.8rem;">Cédula</td>
-                <td id="detCc">—</td>
-              </tr>
-              <tr>
-                <td style="color:var(--blanco-dim); font-size:0.8rem;">Celular</td>
-                <td id="detCelular">—</td>
-              </tr>
-              <tr>
-                <td style="color:var(--blanco-dim); font-size:0.8rem;">Correo</td>
-                <td id="detCorreo">—</td>
-              </tr>
-              <tr>
-                <td style="color:var(--blanco-dim); font-size:0.8rem;">Plan</td>
-                <td id="detPlan">—</td>
-              </tr>
-              <tr>
-                <td style="color:var(--blanco-dim); font-size:0.8rem;">Vencimiento</td>
-                <td id="detVencimiento">—</td>
-              </tr>
-            </table>
-          </div>
+        <div class="section-header">
+          <div class="section-header-title">Datos del Cliente</div>
+          <button class="btn-secondary" id="btnEditar" onclick="editarCliente()" style="padding:8px 16px; font-size:0.8rem;">Editar datos</button>
         </div>
+        <div class="section-body">
+          <table>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem; width:200px;">Nombre completo</td>
+              <td id="detNombre">—</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Cédula</td>
+              <td id="detCc">—</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Celular</td>
+              <td id="detCelular">—</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Correo</td>
+              <td id="detCorreo">—</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Plan</td>
+              <td id="detPlan">—</td>
+            </tr>
+            <tr>
+              <td style="color:var(--blanco-dim); font-size:0.8rem;">Vencimiento</td>
+              <td id="detVencimiento">—</td>
+            </tr>
+          </table>
+          <div id="accionesEditar" style="display:none; margin-top:16px; display:none; gap:12px;" class="form-actions">
+            <button class="btn-primary" onclick="guardarEdicion()">Guardar cambios</button>
+            <button class="btn-secondary" onclick="cancelarEdicion()">Cancelar</button>
+          </div>
+          <div class="notif" id="notifEditar"></div>
+        </div>
+      </div>
 
         <div class="pago-block">
           <div class="pago-block-title">⚡ Registrar pago para este cliente</div>
           <div class="form-grid">
             <div class="form-group">
               <label>Monto</label>
-              <input type="number" id="pagoMonto" placeholder="70000">
+              <input type="text" id="pagoMonto" placeholder="70.000" oninput="formatearMonto(this)">
             </div>
             <div class="form-group">
               <label>Plan a aplicar</label>
@@ -433,7 +439,7 @@
             </div>
             <div class="form-group">
               <label>Primer pago (efectivo) *</label>
-              <input type="number" id="regPago" placeholder="70000">
+              <input type="text" id="regPago" placeholder="70.000" oninput="formatearMonto(this)">
             </div>
           </div>
           <div class="form-actions">
@@ -478,7 +484,7 @@
             <div class="form-grid">
               <div class="form-group">
                 <label>Monto recibido *</label>
-                <input type="number" id="pagoMonto2" placeholder="70000">
+                <input type="text" id="pagoMonto2" placeholder="70.000" oninput="formatearMonto(this)">
               </div>
               <div class="form-group">
                 <label>Plan a aplicar *</label>
@@ -571,6 +577,13 @@
       </tr>
     `).join('');
   }
+async function cargarPerfilRecep() {
+    const res = await fetch('http://localhost:3000/recepcionista/perfil', { headers });
+    const data = await res.json();
+    document.querySelector('.user-name').textContent = data.nombre;
+    document.querySelector('.user-avatar').textContent = data.nombre
+        .split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+}
 
   // ---- CARGAR CLIENTES ----
   let todosLosClientes = [];
@@ -654,27 +667,76 @@
   }
 
   // ---- EDITAR CLIENTE ----
-  function editarCliente() {
-    const nombre = prompt('Nuevo nombre:', document.getElementById('detNombre').textContent);
-    if (!nombre) return;
-    const celular = prompt('Nuevo celular:', document.getElementById('detCelular').textContent);
-    const correo = prompt('Nuevo correo:', document.getElementById('detCorreo').textContent);
+  let datosOriginales = {};
 
-    fetch(`http://localhost:3000/recepcionista/clientes/${clienteActualId}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ nombre, celular, correo })
-    })
-    .then(r => r.json())
-    .then(data => {
-      alert(data.mensaje || 'Cliente actualizado');
-      verCliente(clienteActualId);
-    });
+  function editarCliente() {
+      // Guardar valores originales por si cancela
+      datosOriginales = {
+          nombre: document.getElementById('detNombre').textContent,
+          celular: document.getElementById('detCelular').textContent,
+          correo: document.getElementById('detCorreo').textContent,
+      };
+
+      // Convertir celdas en inputs
+      document.getElementById('detNombre').innerHTML = 
+          `<input type="text" value="${datosOriginales.nombre}" id="inputNombre" style="background:var(--negro-input); border:1px solid var(--rojo); color:var(--blanco); padding:8px 12px; font-family:'Barlow',sans-serif; font-size:0.87rem; width:100%; outline:none;">`;
+      document.getElementById('detCelular').innerHTML = 
+          `<input type="text" value="${datosOriginales.celular}" id="inputCelular" style="background:var(--negro-input); border:1px solid var(--rojo); color:var(--blanco); padding:8px 12px; font-family:'Barlow',sans-serif; font-size:0.87rem; width:100%; outline:none;">`;
+      document.getElementById('detCorreo').innerHTML = 
+          `<input type="email" value="${datosOriginales.correo}" id="inputCorreo" style="background:var(--negro-input); border:1px solid var(--rojo); color:var(--blanco); padding:8px 12px; font-family:'Barlow',sans-serif; font-size:0.87rem; width:100%; outline:none;">`;
+
+      // Mostrar botones y cambiar texto del botón editar
+      document.getElementById('accionesEditar').style.display = 'flex';
+      document.getElementById('btnEditar').style.display = 'none';
+      document.getElementById('notifEditar').className = 'notif';
+  }
+
+  function cancelarEdicion() {
+      document.getElementById('detNombre').textContent = datosOriginales.nombre;
+      document.getElementById('detCelular').textContent = datosOriginales.celular;
+      document.getElementById('detCorreo').textContent = datosOriginales.correo;
+      document.getElementById('accionesEditar').style.display = 'none';
+      document.getElementById('btnEditar').style.display = 'block';
+      document.getElementById('notifEditar').className = 'notif';
+  }
+
+  async function guardarEdicion() {
+      const nombre = document.getElementById('inputNombre').value.trim();
+      const celular = document.getElementById('inputCelular').value.trim();
+      const correo = document.getElementById('inputCorreo').value.trim();
+      const notif = document.getElementById('notifEditar');
+
+      if (!nombre || !celular || !correo) {
+          notif.textContent = 'Todos los campos son obligatorios.';
+          notif.className = 'notif error';
+          return;
+      }
+
+      const res = await fetch(`http://localhost:3000/recepcionista/clientes/${clienteActualId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ nombre, celular, correo })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+          notif.textContent = '✓ Datos actualizados correctamente.';
+          notif.className = 'notif success';
+          setTimeout(() => {
+              document.getElementById('accionesEditar').style.display = 'none';
+              document.getElementById('btnEditar').style.display = 'block';
+              verCliente(clienteActualId);
+          }, 1200);
+      } else {
+          notif.textContent = data.error || 'Error al actualizar.';
+          notif.className = 'notif error';
+      }
   }
 
   // ---- REGISTRAR PAGO DESDE PERFIL ----
   async function registrarPagoDesdeCliente() {
-    const monto = document.getElementById('pagoMonto').value;
+    const monto = obtenerMonto('pagoMonto');
     const plan = document.getElementById('pagoPlan').value;
     const descripcion = document.getElementById('pagoNota').value;
     const notif = document.getElementById('notifPagoCliente');
@@ -714,7 +776,7 @@
     const correo = document.getElementById('regCorreo').value.trim();
     const contrasena = document.getElementById('regPass').value.trim();
     const plan = document.getElementById('regPlan').value;
-    const monto = document.getElementById('regPago').value.trim();
+    const monto = obtenerMonto('regPago');
 
     if (!nombre || !cc || !celular || !correo || !contrasena || !monto) {
       notif.textContent = 'Por favor completa todos los campos obligatorios (*).';
@@ -799,7 +861,7 @@
   }
 
   async function registrarPago() {
-    const monto = document.getElementById('pagoMonto2').value;
+    const monto = obtenerMonto('pagoMonto2');
     const plan = document.getElementById('pagoPlan2').value;
     const descripcion = document.getElementById('pagoDesc').value;
     const notif = document.getElementById('notifPago');
@@ -838,6 +900,18 @@
     return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—';
   }
 
+  function formatearMonto(input) {
+    let valor = input.value.replace(/\D/g, '');
+    if (valor) {
+        valor = parseInt(valor).toLocaleString('es-CO');
+    }
+    input.value = valor;
+}
+
+function obtenerMonto(id) {
+    return document.getElementById(id).value.replace(/\./g, '');
+}
+
   // ---- CERRAR SESIÓN ----
   document.querySelector('.btn-logout').onclick = () => {
     localStorage.removeItem('token');
@@ -847,6 +921,8 @@
 
   // Init
   cargarInicio();
+  cargarPerfilRecep();
+
 </script>
 </body>
 </html>
