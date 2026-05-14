@@ -7,7 +7,7 @@ async function crearRecep() {
     await db.query(
         `INSERT INTO usuarios (nombre, cc, celular, correo, contrasena, rol_id)
          VALUES (?, ?, ?, ?, ?, 2)`,
-        ['Recepcionista Prueba', '999999999', '3009999999', 'recep@templo.com', hash]
+        ['Fernando Mejia', '1042332688', '3023669302', 'fernando@templo.com', hash]
     );
 
     console.log('Recepcionista creado');

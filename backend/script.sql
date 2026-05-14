@@ -81,3 +81,5 @@ INSERT INTO `pagos` VALUES (1,1,90000.00,'2026-05-10 23:15:53','Pago mensual gim
 
 -- 8. VOLVER A ACTIVAR la revisión de llaves foráneas (IMPORTANTE)
 SET FOREIGN_KEY_CHECKS = 1;
+
+ALTER TABLE pagos ADD COLUMN plan ENUM('simple', 'pro') AFTER descripcion;
