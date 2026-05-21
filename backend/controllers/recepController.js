@@ -166,4 +166,59 @@ async function registrarPago(req, res) {
     }
 }
 
-module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil };
+async function getSolicitudes(req, res) {
+    try {
+        const [rows] = await db.query(
+            `SELECT s.id, s.tipo, s.estado, s.fecha, s.plan_solicitado,
+             u.nombre, u.cc, u.correo
+             FROM solicitudes s
+             JOIN usuarios u ON s.usuario_id = u.id
+             WHERE s.estado = 'pendiente'
+             ORDER BY s.fecha DESC`
+        );
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+async function responderSolicitud(req, res) {
+    const { estado } = req.body;
+
+    try {
+        const [solicitud] = await db.query(
+            'SELECT * FROM solicitudes WHERE id = ?',
+            [req.params.id]
+        );
+
+        if (solicitud.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+
+        await db.query(
+            'UPDATE solicitudes SET estado = ? WHERE id = ?',
+            [estado, req.params.id]
+        );
+
+        if (estado === 'aceptada') {
+            if (solicitud[0].tipo === 'baja') {
+                await db.query(
+                    `UPDATE membresias SET estado = 'suspendida' WHERE usuario_id = ?`,
+                    [solicitud[0].usuario_id]
+                );
+            } else if (solicitud[0].tipo === 'cambio_plan') {
+                await db.query(
+                    `UPDATE membresias SET plan = ? WHERE usuario_id = ?`,
+                    [solicitud[0].plan_solicitado, solicitud[0].usuario_id]
+                );
+            }
+        }
+
+        res.json({ mensaje: `Solicitud ${estado} correctamente` });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil, getSolicitudes, responderSolicitud };

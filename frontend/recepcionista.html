@@ -159,6 +159,74 @@
   /* BTN BACK */
   .btn-back { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--blanco-dim); cursor: pointer; background: none; border: none; font-family: 'Barlow', sans-serif; margin-bottom: 24px; padding: 0; transition: color 0.15s; }
   .btn-back:hover { color: var(--blanco); }
+
+/* MODAL */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+    background: var(--negro-card);
+    border: 1px solid var(--gris-borde);
+    border-top: 3px solid var(--rojo);
+    padding: 40px;
+    width: 420px;
+    animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+}
+
+.modal p {
+    font-size: 0.85rem;
+    color: var(--blanco-dim);
+    line-height: 1.6;
+    margin-bottom: 28px;
+    font-weight: 300;
+}
+
+.modal-actions { display: flex; gap: 12px; }
+
+.btn-modal-cancel {
+    flex: 1;
+    padding: 12px;
+    background: var(--gris);
+    border: none;
+    color: var(--blanco);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.btn-modal-confirm {
+    flex: 1;
+    padding: 12px;
+    background: var(--rojo);
+    border: none;
+    color: var(--blanco);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -188,6 +256,9 @@
     <a class="nav-item" onclick="showView('pagos', this)">
       <span class="nav-icon">💰</span> Registrar pago
     </a>
+    <a class="nav-item" onclick="showView('solicitudes', this)">
+        <span class="nav-icon">🔔</span> Solicitudes
+    </a>   
   </nav>
   <div class="sidebar-bottom">
     <button class="btn-logout" onclick="window.location.href='login.html'">⟵ Cerrar sesión</button>
@@ -507,8 +578,60 @@
       </div>
     </div>
 
+    <!-- VIEW: SOLICITUDES -->
+    <div class="view" id="view-solicitudes">
+        <div class="section-block">
+            <div class="section-header">
+                <div class="section-header-title">Solicitudes Pendientes</div>
+                <span style="font-size:0.75rem; color:var(--blanco-dim)" id="totalSolicitudes">0 pendientes</span>
+            </div>
+            <div style="padding: 0 28px 8px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>CC</th>
+                            <th>Correo</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solicitudesTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
   </div>
 </main>
+
+<!-- MODAL CONFIRMAR SOLICITUD -->
+<div class="modal-overlay" id="modal-solicitud">
+  <div class="modal">
+    <h2 id="modalSolicitudTitulo">Confirmar acción</h2>
+    <p id="modalSolicitudTexto">¿Confirmas esta acción?</p>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="cerrarModalSolicitud()">Cancelar</button>
+      <button class="btn-modal-confirm" id="btnConfirmarSolicitud">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICACION GLOBAL -->
+<div id="notifGlobal" style="
+    display: none;
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    padding: 16px 24px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    z-index: 9999;
+    animation: slideUp 0.3s ease;
+    max-width: 380px;
+    border-left: 3px solid;
+"></div>
 
 <script>
   // Token y verificación
@@ -540,6 +663,7 @@
     document.getElementById('pageTitle').textContent = titles[name];
     if (name === 'clientes') cargarClientes();
     if (name === 'inicio') cargarInicio();
+    if (name === 'solicitudes') cargarSolicitudes();
   }
 
   // ---- CARGAR PANEL INICIO ----
@@ -910,6 +1034,93 @@ async function cargarPerfilRecep() {
 
 function obtenerMonto(id) {
     return document.getElementById(id).value.replace(/\./g, '');
+}
+
+async function cargarSolicitudes() {
+    const res = await fetch('http://localhost:3000/recepcionista/solicitudes', { headers });
+    const solicitudes = await res.json();
+
+    const tbody = document.getElementById('solicitudesTbody');
+    document.getElementById('totalSolicitudes').textContent = solicitudes.length + ' pendientes';
+
+    if (solicitudes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="color:var(--blanco-dim);text-align:center;padding:30px;">No hay solicitudes pendientes</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = solicitudes.map(s => `
+        <tr>
+            <td><strong>${s.nombre}</strong></td>
+            <td class="td-dim">${s.cc}</td>
+            <td class="td-dim">${s.correo}</td>
+            <td class="td-dim">${s.tipo === 'baja' 
+                ? 'Solicitud de baja' 
+                : `Cambio a Plan ${s.plan_solicitado === 'pro' ? 'Pro' : 'Simple'}`}</td>
+            <td class="td-dim">${new Date(s.fecha).toLocaleDateString('es-CO')}</td>
+            <td style="display:flex; gap:8px;">
+                <button class="btn-primary" style="padding:6px 14px; font-size:0.8rem;" onclick="responderSolicitud(${s.id}, 'aceptada')">Aceptar</button>
+                <button class="btn-secondary" style="padding:6px 14px; font-size:0.8rem;" onclick="responderSolicitud(${s.id}, 'rechazada')">Rechazar</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function mostrarNotif(mensaje, tipo) {
+    const notif = document.getElementById('notifGlobal');
+    notif.textContent = mensaje;
+    notif.style.display = 'block';
+
+    if (tipo === 'success') {
+        notif.style.background = 'rgba(34,197,94,0.1)';
+        notif.style.borderColor = 'var(--verde)';
+        notif.style.color = 'var(--verde)';
+    } else {
+        notif.style.background = 'rgba(214,40,40,0.1)';
+        notif.style.borderColor = 'var(--rojo)';
+        notif.style.color = '#ff8080';
+    }
+
+    setTimeout(() => { notif.style.display = 'none'; }, 4000);
+}
+
+function cerrarModalSolicitud() {
+    document.getElementById('modal-solicitud').classList.remove('show');
+}
+
+function responderSolicitud(id, estado) {
+    const titulo = document.getElementById('modalSolicitudTitulo');
+    const texto = document.getElementById('modalSolicitudTexto');
+    const btn = document.getElementById('btnConfirmarSolicitud');
+
+    if (estado === 'aceptada') {
+        titulo.textContent = 'Aceptar solicitud';
+        texto.textContent = '¿Confirmas aceptar esta solicitud? Los cambios se aplicarán inmediatamente.';
+        btn.style.background = 'var(--rojo)';
+    } else {
+        titulo.textContent = 'Rechazar solicitud';
+        texto.textContent = '¿Confirmas el rechazo de esta solicitud? No se aplicará ningún cambio.';
+        btn.style.background = 'var(--gris)';
+    }
+
+    btn.onclick = async () => {
+        cerrarModalSolicitud();
+
+        const res = await fetch(`http://localhost:3000/recepcionista/solicitudes/${id}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ estado })
+        });
+
+        const data = await res.json();
+        mostrarNotif(
+            res.ok ? '✓ ' + data.mensaje : '✗ ' + data.error,
+            res.ok ? 'success' : 'error'
+        );
+
+        if (res.ok) cargarSolicitudes();
+    };
+
+    document.getElementById('modal-solicitud').classList.add('show');
 }
 
   // ---- CERRAR SESIÓN ----

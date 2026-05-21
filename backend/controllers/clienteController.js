@@ -36,4 +36,53 @@ async function getPagos(req, res) {
     }
 }
 
-module.exports = { getPerfil, getMembresia, getPagos };
+async function solicitarBaja(req, res) {
+    try {
+        // Verificar si ya tiene una solicitud pendiente
+        const [existe] = await db.query(
+            `SELECT id FROM solicitudes WHERE usuario_id = ? AND estado = 'pendiente'`,
+            [req.usuario.id]
+        );
+
+        if (existe.length > 0) {
+            return res.status(400).json({ error: 'Ya tienes una solicitud de baja pendiente.' });
+        }
+
+        await db.query(
+            `INSERT INTO solicitudes (usuario_id, tipo) VALUES (?, 'baja')`,
+            [req.usuario.id]
+        );
+
+        res.json({ mensaje: 'Solicitud de baja enviada correctamente. El recepcionista la procesará pronto.' });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+async function solicitarCambioPlan(req, res) {
+    const { plan } = req.body;
+
+    try {
+        const [existe] = await db.query(
+            `SELECT id FROM solicitudes WHERE usuario_id = ? AND estado = 'pendiente'`,
+            [req.usuario.id]
+        );
+
+        if (existe.length > 0) {
+            return res.status(400).json({ error: 'Ya tienes una solicitud pendiente.' });
+        }
+
+        await db.query(
+            `INSERT INTO solicitudes (usuario_id, tipo, plan_solicitado) VALUES (?, 'cambio_plan', ?)`,
+            [req.usuario.id, plan]
+        );
+
+        res.json({ mensaje: `Solicitud de cambio a Plan ${plan === 'pro' ? 'Pro' : 'Simple'} enviada. El recepcionista la procesará pronto.` });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { getPerfil, getMembresia, getPagos, solicitarBaja, solicitarCambioPlan };
