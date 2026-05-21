@@ -259,5 +259,55 @@ async function getActividadReciente(req, res) {
     }
 }
 
-module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil, getSolicitudes, responderSolicitud, getActividadReciente };
+async function getReportes(req, res) {
+    const mes = req.query.mes || new Date().getMonth() + 1;
+    const anio = new Date().getFullYear();
+
+    try {
+        let queryPagos, params;
+
+        if (mes == 0) {
+            // Todos los meses del año
+            queryPagos = `SELECT p.monto, p.fecha_pago, p.plan, u.nombre, u.cc
+                         FROM pagos p
+                         JOIN usuarios u ON p.usuario_id = u.id
+                         WHERE YEAR(p.fecha_pago) = ?
+                         ORDER BY p.fecha_pago DESC`;
+            params = [anio];
+        } else {
+            queryPagos = `SELECT p.monto, p.fecha_pago, p.plan, u.nombre, u.cc
+                         FROM pagos p
+                         JOIN usuarios u ON p.usuario_id = u.id
+                         WHERE MONTH(p.fecha_pago) = ? AND YEAR(p.fecha_pago) = ?
+                         ORDER BY p.fecha_pago DESC`;
+            params = [mes, anio];
+        }
+
+        const [pagosMes] = await db.query(queryPagos, params);
+
+        const [pagosTotal] = await db.query(
+            mes == 0
+                ? `SELECT COUNT(*) as total, SUM(monto) as suma FROM pagos WHERE YEAR(fecha_pago) = ?`
+                : `SELECT COUNT(*) as total, SUM(monto) as suma FROM pagos WHERE MONTH(fecha_pago) = ? AND YEAR(fecha_pago) = ?`,
+            mes == 0 ? [anio] : [mes, anio]
+        );
+
+        const [clientes] = await db.query(
+            `SELECT u.nombre, u.cc, m.plan, m.estado, m.fecha_vencimiento
+             FROM usuarios u
+             JOIN roles r ON u.rol_id = r.id
+             LEFT JOIN membresias m ON u.id = m.usuario_id
+             WHERE r.nombre = 'cliente'
+             ORDER BY u.nombre ASC`
+        );
+
+        res.json({ pagosMes, pagosTotal: pagosTotal[0], clientes });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil, getSolicitudes, responderSolicitud, getActividadReciente, getReportes };
+
 

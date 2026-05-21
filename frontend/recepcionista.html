@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>El Templo Fitness — Recepción</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -264,6 +266,9 @@ input[readonly] {
     <a class="nav-item" onclick="showView('solicitudes', this)">
         <span class="nav-icon">🔔</span> Solicitudes
     </a>   
+    <a class="nav-item" onclick="showView('reportes', this)">
+    <span class="nav-icon">📊</span> Reportes
+    </a>
   </nav>
   <div class="sidebar-bottom">
     <button class="btn-logout" onclick="window.location.href='login.html'">⟵ Cerrar sesión</button>
@@ -609,6 +614,74 @@ input[readonly] {
         </div>
     </div>
 
+    <!-- VIEW: REPORTES -->
+    <div class="view" id="view-reportes">
+        
+        <!-- Stats rápidas -->
+        <div class="cards-row" style="margin-bottom:32px;">
+            <div class="stat-card verde">
+                <div class="stat-label">Ingresos del mes</div>
+                <div class="stat-value" style="color:var(--verde)" id="repIngresosMes">$0</div>
+                <div class="stat-sub" id="repPagosMes">0 pagos registrados</div>
+            </div>
+            <div class="stat-card gris">
+                <div class="stat-label">Ingresos totales</div>
+                <div class="stat-value" style="color:var(--blanco)" id="repIngresosTotal">$0</div>
+                <div class="stat-sub" id="repPagosTotal">0 pagos en total</div>
+            </div>
+            <div class="stat-card rojo">
+                <div class="stat-label">Clientes plan Simple</div>
+                <div class="stat-value" style="color:#ff8080" id="repSimple">0</div>
+                <div class="stat-sub">$70.000/mes</div>
+            </div>
+            <div class="stat-card amarillo">
+                <div class="stat-label">Clientes plan Pro</div>
+                <div class="stat-value" style="color:var(--amarillo)" id="repPro">0</div>
+                <div class="stat-sub">$90.000/mes</div>
+            </div>
+        </div>
+
+        <!-- Tabla pagos del mes -->
+        <div class="section-block" style="margin-bottom:24px;">
+            <div class="section-header">
+            <div class="section-header-title">Pagos del Mes</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <select id="filtroMes" onchange="cargarReportes()" style="background:var(--negro-input); border:1px solid var(--gris-borde); color:var(--blanco); padding:8px 12px; font-family:'Barlow',sans-serif; font-size:0.85rem; outline:none;">
+                    <option value="0">Todos los meses</option>
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+                <button class="btn-secondary" style="padding:8px 16px; font-size:0.8rem;" onclick="exportarCSV()">CSV</button>
+                <button class="btn-secondary" style="padding:8px 16px; font-size:0.8rem;" onclick="exportarPDF()">PDF</button>
+            </div>
+        </div>
+            <div style="padding: 0 28px 8px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>CC</th>
+                            <th>Plan</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody id="repPagosTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
   </div>
 </main>
 
@@ -670,6 +743,7 @@ input[readonly] {
     if (name === 'clientes') cargarClientes();
     if (name === 'inicio') cargarInicio();
     if (name === 'solicitudes') cargarSolicitudes();
+    if (name === 'reportes') cargarReportes();
   }
 
   // ---- CARGAR PANEL INICIO ----
@@ -721,7 +795,8 @@ async function cargarPerfilRecep() {
     document.querySelector('.user-name').textContent = data.nombre;
     document.querySelector('.user-avatar').textContent = data.nombre
         .split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-}
+    window.nombreRecep = data.nombre;
+      }
 
   // ---- CARGAR CLIENTES ----
   let todosLosClientes = [];
@@ -1148,6 +1223,160 @@ function responderSolicitud(id, estado) {
 
     document.getElementById('modal-solicitud').classList.add('show');
 }
+
+async function cargarReportes() {
+    const mes = document.getElementById('filtroMes')?.value || new Date().getMonth() + 1;
+    const res = await fetch(`http://localhost:3000/recepcionista/reportes?mes=${mes}`, { headers });
+    const data = await res.json();
+
+    const ingresosMes = data.pagosMes.reduce((sum, p) => sum + Number(p.monto), 0);
+    const ingresosTotal = Number(data.pagosTotal.suma || 0);
+
+    document.getElementById('repIngresosMes').textContent = `$${ingresosMes.toLocaleString('es-CO')}`;
+    document.getElementById('repPagosMes').textContent = `${data.pagosMes.length} pagos registrados`;
+    document.getElementById('repIngresosTotal').textContent = `$${ingresosTotal.toLocaleString('es-CO')}`;
+    document.getElementById('repPagosTotal').textContent = `${data.pagosTotal.total} pagos en total`;
+
+    const simple = data.clientes.filter(c => c.plan === 'simple').length;
+    const pro = data.clientes.filter(c => c.plan === 'pro').length;
+    document.getElementById('repSimple').textContent = simple;
+    document.getElementById('repPro').textContent = pro;
+
+    const tbodyPagos = document.getElementById('repPagosTbody');
+    tbodyPagos.innerHTML = data.pagosMes.length
+        ? data.pagosMes.map(p => `
+            <tr>
+                <td>${p.nombre}</td>
+                <td class="td-dim">${p.cc}</td>
+                <td class="td-dim">${capitalize(p.plan)}</td>
+                <td class="pago-amount">$${Number(p.monto).toLocaleString('es-CO')}</td>
+                <td class="td-dim">${new Date(p.fecha_pago).toLocaleDateString('es-CO')}</td>
+            </tr>`).join('')
+        : `<tr><td colspan="5" style="color:var(--blanco-dim);text-align:center;padding:24px;">Sin pagos este mes</td></tr>`;
+
+    window.reporteData = data;
+    window.mesSeleccionado = document.getElementById('filtroMes').options[document.getElementById('filtroMes').selectedIndex].text;
+}
+
+function exportarCSV() {
+    const pagos = window.reporteData?.pagosMes || [];
+    const mes = window.mesSeleccionado || '';
+
+    if (pagos.length === 0) {
+        mostrarNotif('No hay pagos para exportar.', 'error');
+        return;
+    }
+
+    const periodo = mes === 'Todos los meses'
+        ? `Reporte anual ${new Date().getFullYear()}`
+        : `Reporte de pagos — ${mes} ${new Date().getFullYear()}`;
+
+    const ingresos = pagos.reduce((sum, p) => sum + Number(p.monto), 0);
+    const fechaHoy = new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const encabezado = [
+        ['EL TEMPLO FITNESS'],
+        [periodo],
+        [`Generado el: ${fechaHoy}`],
+        [`Generado por: ${window.nombreRecep || 'Recepcionista'}`],
+        [`Total ingresos: $${ingresos.toLocaleString('es-CO')}`],
+        [`Total pagos: ${pagos.length}`],
+        [],
+        ['Cliente', 'CC', 'Plan', 'Monto', 'Fecha']
+    ];
+
+    const filas = pagos.map(p => [
+        p.nombre,
+        p.cc,
+        p.plan === 'pro' ? 'Pro' : 'Simple',
+        `$${Number(p.monto).toLocaleString('es-CO')}`,
+        new Date(p.fecha_pago).toLocaleDateString('es-CO')
+    ]);
+
+    const csv = 'sep=;\n' + [...encabezado, ...filas].map(f => f.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = mes === 'Todos los meses'
+        ? `reporte_anual_${new Date().getFullYear()}.csv`
+        : `reporte_${mes}_${new Date().getFullYear()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    mostrarNotif('✓ CSV generado correctamente.', 'success');
+}
+
+function exportarPDF() {
+    const pagos = window.reporteData?.pagosMes || [];
+    const mes = window.mesSeleccionado || '';
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Encabezado
+    doc.setFontSize(20);
+    doc.setTextColor(214, 40, 40);
+    doc.text('EL TEMPLO FITNESS', 14, 20);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+
+    const tituloPeriodo = mes === 'Todos los meses'
+        ? `Reporte anual ${new Date().getFullYear()}`
+        : `Reporte de pagos — ${mes} ${new Date().getFullYear()}`;
+
+    doc.text(tituloPeriodo, 14, 28);
+    doc.text(`Generado el: ${new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })}`, 14, 35);
+    doc.text(`Generado por: ${window.nombreRecep || 'Recepcionista'}`, 14, 42);
+    
+    // Línea separadora
+    doc.setDrawColor(214, 40, 40);
+    doc.setLineWidth(0.5);
+    doc.line(14, 46, 196, 46);
+
+    // Stats
+    const ingresosMes = pagos.reduce((sum, p) => sum + Number(p.monto), 0);
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    doc.text(`Total ingresos: $${ingresosMes.toLocaleString('es-CO')}`, 14, 54);
+    doc.text(`Total pagos: ${pagos.length}`, 14, 61);
+
+    // Título tabla
+    doc.setFontSize(13);
+    doc.setTextColor(214, 40, 40);
+    doc.text(mes === 'Todos los meses' ? `Pagos del año ${new Date().getFullYear()}` : `Pagos de ${mes}`, 14, 72);
+
+    // Tabla
+    doc.autoTable({
+        startY: 76,
+        head: [['Cliente', 'CC', 'Plan', 'Monto', 'Fecha']],
+        body: pagos.length
+            ? pagos.map(p => [
+                p.nombre,
+                p.cc,
+                p.plan === 'pro' ? 'Pro' : 'Simple',
+                `$${Number(p.monto).toLocaleString('es-CO')}`,
+                new Date(p.fecha_pago).toLocaleDateString('es-CO')
+            ])
+            : [['Sin pagos en este período', '', '', '', '']],
+        headStyles: { fillColor: [214, 40, 40], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        styles: { fontSize: 9 }
+    });
+
+    // Nombre archivo
+    const nombreArchivo = mes === 'Todos los meses'
+        ? `reporte_anual_${new Date().getFullYear()}.pdf`
+        : `reporte_${mes}_${new Date().getFullYear()}.pdf`;
+
+    doc.save(nombreArchivo);
+    mostrarNotif('✓ PDF generado correctamente.', 'success');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const mes = new Date().getMonth() + 1;
+    document.getElementById('filtroMes').value = mes;
+});
 
   // ---- CERRAR SESIÓN ----
   document.querySelector('.btn-logout').onclick = () => {
