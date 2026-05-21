@@ -220,5 +220,44 @@ async function responderSolicitud(req, res) {
         res.status(500).json({ error: err.message });
     }
 }
+async function getActividadReciente(req, res) {
+    try {
+        // Últimos 5 pagos
+        const [pagos] = await db.query(
+            `SELECT u.nombre, u.cc, p.fecha_pago AS fecha, 
+             CONCAT('Pago registrado — $', FORMAT(p.monto, 0)) AS accion,
+             m.estado AS estado_membresia
+             FROM pagos p
+             JOIN usuarios u ON p.usuario_id = u.id
+             JOIN membresias m ON m.usuario_id = u.id
+             ORDER BY p.fecha_pago DESC
+             LIMIT 5`
+        );
 
-module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil, getSolicitudes, responderSolicitud };
+        // Últimos 5 registros
+        const [registros] = await db.query(
+            `SELECT u.nombre, u.cc, u.fecha_registro AS fecha,
+             'Cliente registrado' AS accion,
+             m.estado AS estado_membresia
+             FROM usuarios u
+             JOIN roles r ON u.rol_id = r.id
+             LEFT JOIN membresias m ON m.usuario_id = u.id
+             WHERE r.nombre = 'cliente'
+             ORDER BY u.fecha_registro DESC
+             LIMIT 5`
+        );
+
+        // Mezclar y ordenar por fecha
+        const actividad = [...pagos, ...registros]
+            .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+            .slice(0, 5);
+
+        res.json(actividad);
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}
+
+module.exports = { registrarCliente, listarClientes, getCliente, actualizarCliente, registrarPago, getPerfil, getSolicitudes, responderSolicitud, getActividadReciente };
+

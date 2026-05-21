@@ -227,6 +227,11 @@
     letter-spacing: 2px;
     cursor: pointer;
 }
+
+input[readonly] {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
 </style>
 </head>
 <body>
@@ -432,11 +437,11 @@
           <div class="form-grid">
             <div class="form-group">
               <label>Monto</label>
-              <input type="text" id="pagoMonto" placeholder="70.000" oninput="formatearMonto(this)">
+              <input type="text" id="pagoMonto" placeholder="70.000" readonly>
             </div>
             <div class="form-group">
               <label>Plan a aplicar</label>
-              <select id="pagoPlan">
+              <select id="pagoPlan" onchange="autocompletarMonto(this)">
                 <option value="simple">Plan Simple — $70.000</option>
                 <option value="pro">Plan Pro — $90.000</option>
               </select>
@@ -499,7 +504,7 @@
             </div>
             <div class="form-group">
               <label>Plan de membresía *</label>
-              <select id="regPlan">
+              <select id="regPlan" onchange="autocompletarMonto(this)">
                 <option value="simple">Plan Simple — $70.000 / 1 sede</option>
                 <option value="pro">Plan Pro — $90.000 / todas las sedes</option>
               </select>
@@ -510,7 +515,7 @@
             </div>
             <div class="form-group">
               <label>Primer pago (efectivo) *</label>
-              <input type="text" id="regPago" placeholder="70.000" oninput="formatearMonto(this)">
+              <input type="text" id="regPago" placeholder="70.000" readonly>
             </div>
           </div>
           <div class="form-actions">
@@ -555,11 +560,12 @@
             <div class="form-grid">
               <div class="form-group">
                 <label>Monto recibido *</label>
-                <input type="text" id="pagoMonto2" placeholder="70.000" oninput="formatearMonto(this)">
+                <!-- <input type="text" id="pagoMonto2" placeholder="70.000" oninput="formatearMonto(this)"> -->
+                <input type="text" id="pagoMonto2" placeholder="70.000" readonly>
               </div>
               <div class="form-group">
                 <label>Plan a aplicar *</label>
-                <select id="pagoPlan2">
+                <select id="pagoPlan2" onchange="autocompletarMonto(this)">
                   <option value="simple">Plan Simple — $70.000</option>
                   <option value="pro">Plan Pro — $90.000</option>
                 </select>
@@ -668,38 +674,46 @@
 
   // ---- CARGAR PANEL INICIO ----
   async function cargarInicio() {
-    const res = await fetch('http://localhost:3000/recepcionista/clientes', { headers });
-    const clientes = await res.json();
+      const [resClientes, resActividad] = await Promise.all([
+          fetch('http://localhost:3000/recepcionista/clientes', { headers }),
+          fetch('http://localhost:3000/recepcionista/actividad', { headers })
+      ]);
 
-    const total = clientes.length;
-    const activas = clientes.filter(c => c.estado_membresia === 'activa').length;
-    const vencidas = clientes.filter(c => c.estado_membresia === 'vencida').length;
+      const clientes = await resClientes.json();
+      const actividad = await resActividad.json();
 
-    const hoy = new Date();
-    const en7dias = new Date();
-    en7dias.setDate(en7dias.getDate() + 7);
-    const porVencer = clientes.filter(c => {
-      if (!c.fecha_vencimiento) return false;
-      const vence = new Date(c.fecha_vencimiento);
-      return vence >= hoy && vence <= en7dias && c.estado_membresia === 'activa';
-    }).length;
+      // Stats
+      const total = clientes.length;
+      const activas = clientes.filter(c => c.estado_membresia === 'activa').length;
+      const vencidas = clientes.filter(c => c.estado_membresia === 'vencida').length;
 
-    document.querySelector('.stat-card.verde .stat-value').textContent = activas;
-    document.querySelector('.stat-card.amarillo .stat-value').textContent = porVencer;
-    document.querySelector('.stat-card.rojo .stat-value').textContent = vencidas;
-    document.querySelector('.stat-card.gris .stat-value').textContent = total;
+      const hoy = new Date();
+      const en7dias = new Date();
+      en7dias.setDate(en7dias.getDate() + 7);
+      const porVencer = clientes.filter(c => {
+          if (!c.fecha_vencimiento) return false;
+          const vence = new Date(c.fecha_vencimiento);
+          return vence >= hoy && vence <= en7dias && c.estado_membresia === 'activa';
+      }).length;
 
-    // Actividad reciente — últimos 5 clientes
-    const tbody = document.querySelector('#view-inicio tbody');
-    tbody.innerHTML = clientes.slice(0, 5).map(c => `
-      <tr>
-        <td>${c.nombre}</td>
-        <td class="td-dim">${c.cc}</td>
-        <td class="td-dim">Cliente registrado</td>
-        <td class="td-dim">${c.fecha_vencimiento ? new Date(c.fecha_vencimiento).toLocaleDateString('es-CO') : '—'}</td>
-        <td>${badgeHtml(c.estado_membresia || 'suspendida')}</td>
-      </tr>
-    `).join('');
+      document.querySelector('.stat-card.verde .stat-value').textContent = activas;
+      document.querySelector('.stat-card.amarillo .stat-value').textContent = porVencer;
+      document.querySelector('.stat-card.rojo .stat-value').textContent = vencidas;
+      document.querySelector('.stat-card.gris .stat-value').textContent = total;
+
+      // Actividad reciente real
+      const tbody = document.querySelector('#view-inicio tbody');
+      tbody.innerHTML = actividad.length
+          ? actividad.map(a => `
+              <tr>
+                  <td>${a.nombre}</td>
+                  <td class="td-dim">${a.cc}</td>
+                  <td class="td-dim">${a.accion}</td>
+                  <td class="td-dim">${new Date(a.fecha).toLocaleDateString('es-CO')}</td>
+                  <td>${badgeHtml(a.estado_membresia || 'suspendida')}</td>
+              </tr>
+          `).join('')
+          : `<tr><td colspan="5" style="color:var(--blanco-dim);text-align:center;padding:24px;">Sin actividad reciente</td></tr>`;
   }
 async function cargarPerfilRecep() {
     const res = await fetch('http://localhost:3000/recepcionista/perfil', { headers });
@@ -1034,6 +1048,18 @@ async function cargarPerfilRecep() {
 
 function obtenerMonto(id) {
     return document.getElementById(id).value.replace(/\./g, '');
+}
+
+function autocompletarMonto(select) {
+    const monto = select.value === 'pro' ? '90.000' : '70.000';
+    
+    if (select.id === 'pagoPlan') {
+        document.getElementById('pagoMonto').value = monto;
+    } else if (select.id === 'pagoPlan2') {
+        document.getElementById('pagoMonto2').value = monto;
+    } else if (select.id === 'regPlan') {
+        document.getElementById('regPago').value = monto;
+    }
 }
 
 async function cargarSolicitudes() {
